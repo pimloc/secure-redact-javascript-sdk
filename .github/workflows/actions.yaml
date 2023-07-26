@@ -1,0 +1,24 @@
+name: Test & Lint
+run-name: 🚀 running linter and tests
+on:
+  pull_request:
+    branches: [master]
+jobs:
+  lint_and_test_lib:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Run linter
+        run: npx eslint . --max-warnings 0
+      - name: Run Tests
+        run: npm run test
+      - run: echo "🍏 This job's status is ${{ job.status }}."
