@@ -1,0 +1,12 @@
+{
+  "[javascript]": {
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // available through eslint plugin in vscode
+  "eslint.lintTask.enable": true,
+  "eslint.workingDirectories": ["./"]
+}
