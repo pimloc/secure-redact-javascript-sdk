@@ -1,13 +1,9 @@
 import { buildBasicToken } from './utils/buildBasicToken.ts';
-import { buildQueryParams } from './utils/buildQueryParams.ts';
-import { makeRequest } from './utils/makeRequest.ts';
-
-const DEFAULT_VERSION: string = 'v2';
-const DEFAULT_BASE_URL: string = 'https://app.secureredact.co.uk';
+import { SecureRedactRequest } from './SecureRedactRequest.ts';
 
 class SecureRedactSDK {
-  #baseUrl = DEFAULT_BASE_URL;
-  #version = DEFAULT_VERSION;
+  readonly #BASE_URL: string = 'https://app.secureredact.co.uk';
+  readonly #VERSION: string = 'v2';
   #basicToken;
 
   constructor({
@@ -21,7 +17,7 @@ class SecureRedactSDK {
   }
 
   #buildUrlPath = (endpoint: string) =>
-    `${this.#baseUrl}/api/${this.#version}/${endpoint}`;
+    `${this.#BASE_URL}/api/${this.#VERSION}/${endpoint}`;
 
   #makeGetRequest = async (
     endpoint: string,
@@ -29,8 +25,10 @@ class SecureRedactSDK {
     auth: string
   ) => {
     try {
-      return await makeRequest(
-        `${this.#buildUrlPath(endpoint)}?${buildQueryParams(params)}`,
+      return await SecureRedactRequest.makeRequest(
+        `${this.#buildUrlPath(endpoint)}?${SecureRedactRequest.buildQueryParams(
+          params
+        )}`,
         {
           method: 'GET',
           headers: {

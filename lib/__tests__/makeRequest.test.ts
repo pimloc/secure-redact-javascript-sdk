@@ -1,35 +1,39 @@
 import { test, describe, before, afterEach, after } from 'node:test';
 import * as assert from 'node:assert';
-import { makeRequest } from '../utils/makeRequest.ts';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
+import { SecureRedactRequest } from '../SecureRedactRequest.ts';
 
 const validData = { token: 'valid_token' };
 const authToken = 'valid_auth_header_token';
 
+// have to do this to parse the URL search params correctly
+type ErrorStatusCodes = Record<string, string>;
+const errorStatusCodes: ErrorStatusCodes = {
+  '400': 'Bad request',
+  '401': 'Unauthorized',
+  '403': 'Forbidden',
+  '404': 'Not found',
+  '500': 'Internal Server Error'
+};
+
 const server = setupServer(
   rest.get('http://localhost:3000/200', (req, res, ctx) => {
-    console.log(req.headers);
     if (req.headers.get('authorization') === authToken) {
       return res(ctx.status(200), ctx.json(validData));
     } else {
-      return res(ctx.status(401), ctx.json({ error: 'Unauthorized' }));
+      return res(ctx.status(200), ctx.json({ error: 'body error' }));
     }
   }),
-  rest.get('http://localhost:3000/400', (req, res, ctx) => {
-    return res(ctx.status(400), ctx.json({ error: 'Bad request' }));
-  }),
-  rest.get('http://localhost:3000/401', (req, res, ctx) => {
-    return res(ctx.status(401), ctx.json({ error: 'Unauthorized' }));
-  }),
-  rest.get('http://localhost:3000/403', (req, res, ctx) => {
-    return res(ctx.status(403), ctx.json({ error: 'Forbidden' }));
-  }),
-  rest.get('http://localhost:3000/404', (req, res, ctx) => {
-    return res(ctx.status(404), ctx.json({ error: 'Not found' }));
-  }),
-  rest.get('http://localhost:3000/500', (req, res, ctx) => {
-    return res(ctx.status(500), ctx.json({ error: 'Internal Server Error' }));
+  rest.get('http://localhost:3000', (req, res, ctx) => {
+    const errorKey = req.url.searchParams.get('errorKey');
+    if (!errorKey || !(errorKey in errorStatusCodes)) {
+      return res(ctx.status(500), ctx.json({ error: 'Invalid status code' }));
+    }
+    return res(
+      ctx.status(parseInt(errorKey)),
+      ctx.json({ error: errorStatusCodes[errorKey] })
+    );
   }),
   rest.get('http://localhost:3000/bad_json', (req, res, ctx) => {
     return res(ctx.status(200), ctx.text('bad json'));
@@ -41,94 +45,38 @@ describe('testing makeRequest utility function', () => {
   afterEach(() => server.resetHandlers());
   after(() => server.close());
 
-  test('throws error on 400', async () => {
-    await assert.rejects(
-      async () => {
-        await makeRequest('http://localhost:3000/400', {
-          headers: {
-            accept: 'application/json'
-          }
-        });
-      },
-      {
-        name: 'SecureRedactError',
-        message: 'Received invalid response: Bad request',
-        statusCode: 400
-      }
-    );
-  });
-  test('throws error on 401', async () => {
-    await assert.rejects(
-      async () => {
-        await makeRequest('http://localhost:3000/401', {
-          headers: {
-            accept: 'application/json'
-          }
-        });
-      },
-      {
-        name: 'SecureRedactError',
-        message: 'Received invalid response: Unauthorized',
-        statusCode: 401
-      }
-    );
-  });
-  test('throws error on 403', async () => {
-    await assert.rejects(
-      async () => {
-        await makeRequest('http://localhost:3000/403', {
-          headers: {
-            accept: 'application/json'
-          }
-        });
-      },
-      {
-        name: 'SecureRedactError',
-        message: 'Received invalid response: Forbidden',
-        statusCode: 403
-      }
-    );
-  });
-  test('throws error on 404', async () => {
-    await assert.rejects(
-      async () => {
-        await makeRequest('http://localhost:3000/404', {
-          headers: {
-            accept: 'application/json'
-          }
-        });
-      },
-      {
-        name: 'SecureRedactError',
-        message: 'Received invalid response: Not found',
-        statusCode: 404
-      }
-    );
-  });
-  test('throws error on 500', async () => {
-    await assert.rejects(
-      async () => {
-        await makeRequest('http://localhost:3000/500', {
-          headers: {
-            accept: 'application/json'
-          }
-        });
-      },
-      {
-        name: 'SecureRedactError',
-        message: 'Received invalid response: Internal Server Error',
-        statusCode: 500
-      }
-    );
-  });
+  for (const [errorCode, errorMessage] of Object.entries(errorStatusCodes)) {
+    test(`throws error on ${errorCode}`, async () => {
+      await assert.rejects(
+        async () => {
+          await SecureRedactRequest.makeRequest(
+            `http://localhost:3000?errorKey=${errorCode}`,
+            {
+              headers: {
+                accept: 'application/json'
+              }
+            }
+          );
+        },
+        {
+          name: 'SecureRedactError',
+          message: `Received invalid response: ${errorMessage}`,
+          statusCode: parseInt(errorCode)
+        }
+      );
+    });
+  }
   test('throws error on bad json', async () => {
     await assert.rejects(
       async () => {
-        await makeRequest('http://localhost:3000/bad_json', {
-          headers: {
-            accept: 'application/json'
+        await SecureRedactRequest.makeRequest(
+          'http://localhost:3000/bad_json',
+          {
+            headers: {
+              accept: 'application/json'
+            }
           }
-        });
+        );
       },
       {
         name: 'SecureRedactError',
@@ -140,7 +88,7 @@ describe('testing makeRequest utility function', () => {
   test('throws if no auth header provided', async () => {
     await assert.rejects(
       async () => {
-        await makeRequest('http://localhost:3000/200', {
+        await SecureRedactRequest.makeRequest('http://localhost:3000/200', {
           headers: {
             accept: 'application/json'
           }
@@ -148,18 +96,21 @@ describe('testing makeRequest utility function', () => {
       },
       {
         name: 'SecureRedactError',
-        message: 'Received invalid response: Unauthorized',
-        statusCode: 401
+        message: 'Received invalid response: body error',
+        statusCode: 200
       }
     );
   });
   test('resolves if auth header provided', async () => {
-    const response = await makeRequest('http://localhost:3000/200', {
-      headers: {
-        Accept: 'application/json',
-        Authorization: authToken
+    const response = await SecureRedactRequest.makeRequest(
+      'http://localhost:3000/200',
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: authToken
+        }
       }
-    });
+    );
     assert.deepStrictEqual(response, validData);
   });
 });

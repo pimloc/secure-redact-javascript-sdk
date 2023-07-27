@@ -1,9 +1,10 @@
 import { test, describe } from 'node:test';
 import * as assert from 'node:assert';
-import { buildBasicToken } from '../utils/buildBasicToken';
+import { buildBasicToken } from '../utils/buildBasicToken.ts';
 
 const clientId = 'clientId';
 const clientSecret = 'clientSecret';
+const expectedToken = 'Y2xpZW50SWQ6Y2xpZW50U2VjcmV0';
 
 describe('test buildBasicToken functionality', () => {
   test('fails if no clientId provided', () => {
@@ -27,5 +28,6 @@ describe('test buildBasicToken functionality', () => {
   test('returns base64 encoded string', () => {
     const token = buildBasicToken(clientId, clientSecret);
     assert.equal(typeof token, 'string');
+    assert.equal(token, expectedToken);
   });
 });
