@@ -19,32 +19,9 @@ class SecureRedactSDK {
   #buildUrlPath = (endpoint: string) =>
     `${this.#BASE_URL}/api/${this.#VERSION}/${endpoint}`;
 
-  #makeGetRequest = async (
-    endpoint: string,
-    params: Record<string, string>,
-    auth: string
-  ) => {
-    try {
-      return await SecureRedactRequest.makeRequest(
-        `${this.#buildUrlPath(endpoint)}?${SecureRedactRequest.buildQueryParams(
-          params
-        )}`,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            Authorization: auth
-          }
-        }
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   fetchToken = async ({ userId = null }: { userId: string | null }) => {
-    const res = await this.#makeGetRequest(
-      'token',
+    const res = await SecureRedactRequest.makeGetRequest(
+      this.#buildUrlPath('token'),
       userId ? { userId } : {},
       `Basic ${this.#basicToken}`
     );
