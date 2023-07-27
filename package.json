@@ -4,9 +4,9 @@
   "description": "Javascript SDK wrapper for Secure Redact platform. Built and maintained by Pimloc.",
   "main": "./lib/SecureRedactSDK.ts",
   "scripts": {
-    "test:only": "node --test --loader tsx --watch --test-only ./lib/__tests__/*",
-    "test:dev": "node --test --loader tsx --watch ./lib/__tests__/*",
-    "test": "node --test --loader tsx ./lib/__tests__/*"
+    "test:only": "node --test --loader tsx --watch --test-only ./lib/__tests__/*.test.ts",
+    "test:dev": "node --test --loader tsx --watch ./lib/__tests__/*.test.ts",
+    "test": "node --test --loader tsx ./lib/__tests__/*.test.ts"
   },
   "repository": {
     "type": "git",

@@ -38,10 +38,10 @@ class SecureRedactSDK {
     username: string,
     retries = 0
   ): Promise<SecureRedactResponseData> => {
-    if (username || !this.#bearerToken) {
-      await this.fetchToken(username);
-    }
     try {
+      if (username || !this.#bearerToken) {
+        await this.fetchToken(username);
+      }
       return await SecureRedactRequest.makeGetRequest(
         url,
         params,

@@ -3,14 +3,12 @@ import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { SecureRedactSDK } from '../SecureRedactSDK.ts';
+import { creds } from './utils.ts';
 
-const clientId = 'clientId';
-const clientSecret = 'clientSecret';
-const expectedToken = 'Basic Y2xpZW50SWQ6Y2xpZW50U2VjcmV0';
 const dummyUsername = 'test@test.com';
 const validData: { error: string | null; token: string } = {
   error: null,
-  token: 'dummy.jwt.token'
+  token: creds.bearerToken
 };
 const mockCallback = mock.fn();
 
@@ -20,7 +18,7 @@ const server = setupServer(
     if (username) {
       mockCallback(username);
     }
-    if (req.headers.get('authorization') === expectedToken) {
+    if (req.headers.get('authorization') === creds.basicToken) {
       return res(ctx.status(200), ctx.json(validData));
     } else {
       return res(ctx.status(403), ctx.json({ error: 'Forbidden' }));
@@ -28,15 +26,15 @@ const server = setupServer(
   })
 );
 
-describe.only('test fetchToken functionality', () => {
+describe('test fetchToken functionality', () => {
   before(() => server.listen());
   afterEach(() => server.resetHandlers());
   after(() => server.close());
 
-  test.only('fetch token fails if invalid clientId', async () => {
+  test('fetch token fails if invalid clientId', async () => {
     const secureRedact = new SecureRedactSDK({
       clientId: 'bad clientId',
-      clientSecret
+      clientSecret: creds.clientSecret
     });
     await assert.rejects(async () => await secureRedact.fetchToken(), {
       name: 'SecureRedactError',
@@ -45,9 +43,9 @@ describe.only('test fetchToken functionality', () => {
     });
   });
 
-  test.only('fetch token fails if invalid clientSecret', async () => {
+  test('fetch token fails if invalid clientSecret', async () => {
     const secureRedact = new SecureRedactSDK({
-      clientId,
+      clientId: creds.clientId,
       clientSecret: 'bad client secret'
     });
     await assert.rejects(async () => await secureRedact.fetchToken(), {
@@ -57,19 +55,19 @@ describe.only('test fetchToken functionality', () => {
     });
   });
 
-  test.only('fetch token suceeds with valid credentials', async () => {
+  test('fetch token suceeds with valid credentials', async () => {
     const secureRedact = new SecureRedactSDK({
-      clientId,
-      clientSecret
+      clientId: creds.clientId,
+      clientSecret: creds.clientSecret
     });
     const token = await secureRedact.fetchToken();
     assert.strictEqual(token, validData.token);
   });
 
-  test.only('fetch token suceeds with valid credentials and username', async () => {
+  test('fetch token suceeds with valid credentials and username', async () => {
     const secureRedact = new SecureRedactSDK({
-      clientId,
-      clientSecret
+      clientId: creds.clientId,
+      clientSecret: creds.clientSecret
     });
     const token = await secureRedact.fetchToken(dummyUsername);
     assert.strictEqual(token, validData.token);
