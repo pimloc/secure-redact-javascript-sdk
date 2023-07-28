@@ -30,7 +30,7 @@ const defaultHandlers = [
 ];
 
 const invalidAuthenticatedTokenTest = (method: any, data: any) => {
-  test.only('fails if token invalid', async () => {
+  test('fails if token invalid', async () => {
     await assert.rejects(async () => await method(data), {
       name: 'SecureRedactError',
       statusCode: 403,
@@ -46,19 +46,25 @@ const authenticatedTokenTests = (
   method: any,
   data: any
 ) => {
-  test.only('calls token endpoint if no token', async () => {
+  test('calls token endpoint if no token', async () => {
     await method(data);
     assert.strictEqual(tokenEndpointHitCallback.mock.calls.length, 1);
   });
 
-  test.only('does not call token endpoint if token', async () => {
+  test('does not call token endpoint if token', async () => {
     await fetchToken();
     tokenEndpointHitCallback.mock.resetCalls();
     await method(data);
     assert.strictEqual(tokenEndpointHitCallback.mock.calls.length, 0);
   });
+};
 
-  test.only('calls token endpoint if username provided', async () => {
+const authenticatedTokenUsernameProvidedTest = (
+  fetchToken: () => ReturnType<SecureRedactSDK['fetchToken']>,
+  method: any,
+  data: any
+) => {
+  test('calls token endpoint if username provided', async () => {
     await fetchToken();
     tokenEndpointHitCallback.mock.resetCalls();
     await method({ ...data, username: 'test@test.com' });
@@ -71,5 +77,6 @@ export {
   creds,
   tokenEndpointHitCallback,
   invalidAuthenticatedTokenTest,
-  authenticatedTokenTests
+  authenticatedTokenTests,
+  authenticatedTokenUsernameProvidedTest
 };

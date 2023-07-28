@@ -15,6 +15,7 @@ import {
   creds,
   defaultHandlers,
   invalidAuthenticatedTokenTest,
+  authenticatedTokenUsernameProvidedTest,
   tokenEndpointHitCallback
 } from './utils.ts';
 
@@ -32,7 +33,7 @@ const server = setupServer(
   })
 );
 
-describe.only('test fetchMediaStatus functionality', () => {
+describe('test fetchMediaStatus functionality', () => {
   before(() => server.listen());
   beforeEach(() => tokenEndpointHitCallback.mock.resetCalls());
   afterEach(() => server.resetHandlers());
@@ -58,8 +59,15 @@ describe.only('test fetchMediaStatus functionality', () => {
       mediaId: validResponse.media_id
     }
   );
+  authenticatedTokenUsernameProvidedTest(
+    secureRedact.fetchToken,
+    secureRedact.fetchMediaStatus,
+    {
+      mediaId: validResponse.media_id
+    }
+  );
 
-  test.only('fails if info route throws', async () => {
+  test('fails if info route throws', async () => {
     const badError = 'bad error';
     server.use(
       rest.get(
@@ -82,7 +90,7 @@ describe.only('test fetchMediaStatus functionality', () => {
     );
   });
 
-  test.only('returns correct data', async () => {
+  test('returns correct data', async () => {
     const result = await secureRedact.fetchMediaStatus({
       mediaId: validResponse.media_id,
       username: validResponse.username
