@@ -136,5 +136,14 @@ describe('test uploadMedia functionality', () => {
     );
     const result = await secureRedact.uploadMedia(requestParams);
     assert.deepStrictEqual(result, validResponse);
+    assert.strictEqual(mockCallback.mock.calls.length, 1);
+    assert.deepStrictEqual(mockCallback.mock.calls[0].arguments[0], {
+      media_path: requestParams.mediaPath,
+      video_tag: requestParams.videoTag,
+      increased_detection_accuracy: requestParams.increasedDetectionAccuracy,
+      state_callback: requestParams.stateCallback,
+      export_callback: requestParams.exportCallback,
+      export_token: requestParams.exportToken
+    });
   });
 });
