@@ -1,9 +1,10 @@
 import SecureRedactError from './SecureRedactError.ts';
+import { SecureRedactParamsData } from './types.ts';
 
 class SecureRedactRequest {
   static makePostRequest = async (
     url: string,
-    data: Record<string, string>,
+    data: SecureRedactParamsData,
     auth: string
   ) => {
     try {
@@ -28,7 +29,7 @@ class SecureRedactRequest {
 
   static makeGetRequest = async (
     url: string,
-    params: Record<string, string>,
+    params: SecureRedactParamsData,
     auth: string
   ) => {
     try {
@@ -76,7 +77,7 @@ class SecureRedactRequest {
     }
   };
 
-  static buildBody = (obj: Record<string, string>) => {
+  static buildBody = (obj: SecureRedactParamsData) => {
     try {
       return JSON.stringify(obj);
     } catch (err) {
@@ -88,11 +89,18 @@ class SecureRedactRequest {
     }
   };
 
-  static buildQueryParams = (obj: Record<string, string>) => {
+  static buildQueryParams = (obj: SecureRedactParamsData) => {
     const queryParams = [];
     for (const key in obj) {
-      const value = encodeURIComponent(obj[key]);
-      queryParams.push(`${encodeURIComponent(key)}=${value}`);
+      let item = obj[key];
+      if (item !== undefined) {
+        if (typeof obj[key] !== 'string') {
+          item = item.toString();
+        }
+        queryParams.push(
+          `${encodeURIComponent(key)}=${encodeURIComponent(item)}`
+        );
+      }
     }
 
     return queryParams.join('&');
