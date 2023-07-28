@@ -4,7 +4,7 @@ import { buildBasicToken } from '../utils/buildBasicToken.ts';
 
 const clientId = 'clientId';
 const clientSecret = 'clientSecret';
-const expectedToken = 'Y2xpZW50SWQ6Y2xpZW50U2VjcmV0';
+const expectedToken = 'Basic Y2xpZW50SWQ6Y2xpZW50U2VjcmV0';
 
 describe('test buildBasicToken functionality', () => {
   test('fails if no clientId provided', () => {
