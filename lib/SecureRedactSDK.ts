@@ -16,7 +16,9 @@ import {
   RedactMediaParams,
   SecureRedactRedactResponse,
   DeleteMediaParams,
-  SecureRedactDeleteMediaResponse
+  SecureRedactDeleteMediaResponse,
+  LoginUserParams,
+  SecureRedactLoginResponse
 } from './types.ts';
 import SecureRedactError from './SecureRedactError.ts';
 
@@ -167,6 +169,31 @@ class SecureRedactSDK {
       username: data.username,
       msg: this.#parseToString(data.msg),
       error: this.#parseToString(data.error)
+    };
+  };
+
+  loginUser = async ({
+    username,
+    mediaId
+  }: LoginUserParams): Promise<SecureRedactLoginResponse> => {
+    const data = await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.LOGIN_USER),
+      {
+        media_id: mediaId
+      },
+      username
+    );
+
+    if (typeof data.redirect_url !== 'string') {
+      throw new SecureRedactError('Invalid redirect_url type returned', 500);
+    }
+    if (typeof data.success !== 'boolean') {
+      throw new SecureRedactError('Invalid success type returned', 500);
+    }
+
+    return {
+      redirectUrl: data.redirect_url,
+      success: data.success
     };
   };
 
