@@ -1,5 +1,4 @@
 import SecureRedactError from './SecureRedactError.ts';
-import { SecureRedactResponseData } from './types.ts';
 
 class SecureRedactRequest {
   static makePostRequest = async (
@@ -50,10 +49,7 @@ class SecureRedactRequest {
     }
   };
 
-  static makeRequest = async (
-    url: string,
-    options?: RequestInit
-  ): Promise<SecureRedactResponseData> => {
+  static makeRequest = async (url: string, options?: RequestInit) => {
     try {
       const response = await fetch(url, options);
       const body = await response.json();
@@ -64,7 +60,7 @@ class SecureRedactRequest {
           response.status
         );
       }
-      return body as SecureRedactResponseData;
+      return body;
     } catch (err) {
       if (err instanceof SecureRedactError) {
         throw err;

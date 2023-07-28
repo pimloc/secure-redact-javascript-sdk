@@ -7,8 +7,8 @@ enum SecureRedactEndpoints {
   FETCH_MEDIA_STATUS = 'info'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SecureRedactResponseData = Record<string, any>;
+type SecureRedactResponseValue = string | number | null;
+type SecureRedactResponseData = Record<string, SecureRedactResponseValue>;
 
 type FetchTokenParams = SecureRedactUsername | null;
 
@@ -20,7 +20,7 @@ interface FetchMediaStatusParams {
 interface SecureRedactMediaInfo {
   mediaId: SecureRedactMediaId;
   username: SecureRedactUsername;
-  error: string;
+  error: string | null;
   status: string;
 }
 

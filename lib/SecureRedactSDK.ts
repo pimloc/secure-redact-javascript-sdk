@@ -32,7 +32,12 @@ class SecureRedactSDK {
   #buildUrlPath = (endpoint: string) =>
     `${this.#BASE_URL}/api/${this.#VERSION}/${endpoint}`;
 
-  #makeAuthenticatedGetRequest = async (
+  #makeAuthenticatedRequest = async (
+    requester: (
+      url: string,
+      params: Record<string, string>,
+      auth: string
+    ) => Promise<SecureRedactResponseData>,
     url: string,
     params: Record<string, string>,
     username: string,
@@ -42,18 +47,15 @@ class SecureRedactSDK {
       if (username || !this.#bearerToken) {
         await this.fetchToken(username);
       }
-      return await SecureRedactRequest.makeGetRequest(
-        url,
-        params,
-        this.#bearerToken
-      );
+      return await requester(url, params, this.#bearerToken);
     } catch (err) {
       if (
         err instanceof SecureRedactError &&
         err.statusCode === 403 &&
         retries < this.#MAX_RETRIES
       ) {
-        return await this.#makeAuthenticatedGetRequest(
+        return await this.#makeAuthenticatedRequest(
+          requester,
           url,
           params,
           username,
@@ -65,6 +67,32 @@ class SecureRedactSDK {
     }
   };
 
+  #makeAuthenticatedPostRequest = async (
+    url: string,
+    data: Record<string, string>,
+    username: string
+  ) => {
+    return await this.#makeAuthenticatedRequest(
+      SecureRedactRequest.makePostRequest,
+      url,
+      data,
+      username
+    );
+  };
+
+  #makeAuthenticatedGetRequest = async (
+    url: string,
+    params: Record<string, string>,
+    username: string
+  ) => {
+    return await this.#makeAuthenticatedRequest(
+      SecureRedactRequest.makeGetRequest,
+      url,
+      params,
+      username
+    );
+  };
+
   fetchToken = async (
     username: FetchTokenParams = null
   ): Promise<SecureRedactBearerToken> => {
@@ -73,9 +101,12 @@ class SecureRedactSDK {
       username ? { username } : {},
       this.#basicToken
     );
+    if (typeof data.token !== 'string') {
+      throw new SecureRedactError('Invalid token type', 500);
+    }
     // store token for future use
     this.#setBearerToken(data.token);
-    return data.token as SecureRedactBearerToken;
+    return data.token;
   };
 
   fetchMediaStatus = async ({
@@ -87,12 +118,23 @@ class SecureRedactSDK {
       { mediaId },
       username
     );
+
+    if (typeof data.media_id !== 'string') {
+      throw new SecureRedactError('Invalid mediaId type', 500);
+    }
+    if (typeof data.username !== 'string') {
+      throw new SecureRedactError('Invalid username type', 500);
+    }
+    if (typeof data.status !== 'string') {
+      throw new SecureRedactError('Invalid status type', 500);
+    }
+
     return {
       mediaId: data.media_id,
       username: data.username,
-      error: data.error,
+      error: data.error?.toString(),
       status: data.status
-    } as SecureRedactMediaInfo;
+    };
   };
 }
 
