@@ -6,7 +6,9 @@ import {
   SecureRedactBearerToken,
   SecureRedactEndpoints,
   SecureRedactMediaInfo,
-  SecureRedactResponseData
+  SecureRedactResponseData,
+  SecureRedactUserInfo,
+  CreateUserParams
 } from './types.ts';
 import SecureRedactError from './SecureRedactError.ts';
 
@@ -71,7 +73,7 @@ class SecureRedactSDK {
   #makeAuthenticatedPostRequest = async (
     url: string,
     data: Record<string, string>,
-    username: string | undefined
+    username?: string
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makePostRequest,
@@ -84,7 +86,7 @@ class SecureRedactSDK {
   #makeAuthenticatedGetRequest = async (
     url: string,
     params: Record<string, string>,
-    username: string | undefined
+    username?: string
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makeGetRequest,
@@ -135,6 +137,25 @@ class SecureRedactSDK {
       username: data.username,
       error: data.error ? data.error.toString() : null,
       status: data.status
+    };
+  };
+
+  createUser = async ({
+    username
+  }: CreateUserParams): Promise<SecureRedactUserInfo> => {
+    const data = await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.CREATE_USER),
+      { username }
+    );
+
+    if (typeof data.username !== 'string') {
+      throw new SecureRedactError('Invalid username type', 500);
+    }
+
+    return {
+      username: data.username,
+      msg: data.msg ? data.msg.toString() : null,
+      error: data.error ? data.error.toString() : null
     };
   };
 }

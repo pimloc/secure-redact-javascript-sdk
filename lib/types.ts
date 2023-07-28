@@ -4,7 +4,8 @@ type SecureRedactMediaId = string;
 
 enum SecureRedactEndpoints {
   FETCH_TOKEN = 'token',
-  FETCH_MEDIA_STATUS = 'info'
+  FETCH_MEDIA_STATUS = 'info',
+  CREATE_USER = 'signup'
 }
 
 type SecureRedactResponseValue = string | number | null;
@@ -24,11 +25,23 @@ interface SecureRedactMediaInfo {
   status: string;
 }
 
+interface CreateUserParams {
+  username: SecureRedactUsername;
+}
+
+interface SecureRedactUserInfo {
+  username: SecureRedactUsername;
+  error: string | null;
+  msg: string | null;
+}
+
 export {
   SecureRedactResponseData,
   SecureRedactBearerToken,
   SecureRedactEndpoints,
   SecureRedactMediaInfo,
   FetchTokenParams,
-  FetchMediaStatusParams
+  FetchMediaStatusParams,
+  CreateUserParams,
+  SecureRedactUserInfo
 };
