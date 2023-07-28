@@ -15,7 +15,7 @@ class SecureRedactSDK {
   readonly #VERSION: string = 'v2';
   readonly #MAX_RETRIES: number = 1;
   #basicToken: string;
-  #bearerToken: string;
+  #bearerToken: string | null;
 
   constructor({
     clientId,
@@ -25,6 +25,7 @@ class SecureRedactSDK {
     clientSecret: string;
   }) {
     this.#basicToken = buildBasicToken(clientId, clientSecret);
+    this.#bearerToken = null;
   }
 
   #setBearerToken = (token: string) => (this.#bearerToken = `Bearer ${token}`);
@@ -40,12 +41,12 @@ class SecureRedactSDK {
     ) => Promise<SecureRedactResponseData>,
     url: string,
     params: Record<string, string>,
-    username: string,
+    username: string | undefined = undefined,
     retries = 0
   ): Promise<SecureRedactResponseData> => {
     try {
       if (username || !this.#bearerToken) {
-        await this.fetchToken(username);
+        this.#bearerToken = await this.fetchToken(username);
       }
       return await requester(url, params, this.#bearerToken);
     } catch (err) {
@@ -70,7 +71,7 @@ class SecureRedactSDK {
   #makeAuthenticatedPostRequest = async (
     url: string,
     data: Record<string, string>,
-    username: string
+    username: string | undefined
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makePostRequest,
@@ -83,7 +84,7 @@ class SecureRedactSDK {
   #makeAuthenticatedGetRequest = async (
     url: string,
     params: Record<string, string>,
-    username: string
+    username: string | undefined
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makeGetRequest,
@@ -132,7 +133,7 @@ class SecureRedactSDK {
     return {
       mediaId: data.media_id,
       username: data.username,
-      error: data.error?.toString(),
+      error: data.error ? data.error.toString() : null,
       status: data.status
     };
   };

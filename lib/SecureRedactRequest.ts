@@ -18,8 +18,10 @@ class SecureRedactRequest {
     } catch (err) {
       if (err instanceof SecureRedactError) {
         throw err;
+      } else if (err instanceof Error) {
+        throw new SecureRedactError(err, 500);
       } else {
-        throw new SecureRedactError(err.message, 500);
+        throw err;
       }
     }
   };
@@ -43,8 +45,10 @@ class SecureRedactRequest {
     } catch (err) {
       if (err instanceof SecureRedactError) {
         throw err;
+      } else if (err instanceof Error) {
+        throw new SecureRedactError(err, 500);
       } else {
-        throw new SecureRedactError(err.message, 500);
+        throw err;
       }
     }
   };
@@ -64,8 +68,10 @@ class SecureRedactRequest {
     } catch (err) {
       if (err instanceof SecureRedactError) {
         throw err;
+      } else if (err instanceof Error) {
+        throw new SecureRedactError(err, 500);
       } else {
-        throw new SecureRedactError(err.message, 500);
+        throw err;
       }
     }
   };
@@ -74,7 +80,11 @@ class SecureRedactRequest {
     try {
       return JSON.stringify(obj);
     } catch (err) {
-      throw new Error(`Failed to stringify body: ${err.message}`);
+      if (err instanceof Error) {
+        throw new Error(`Failed to stringify body: ${err.message}`);
+      } else {
+        throw err;
+      }
     }
   };
 
