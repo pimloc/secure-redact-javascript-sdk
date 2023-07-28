@@ -16,6 +16,7 @@ import {
   creds,
   defaultHandlers,
   invalidAuthenticatedTokenTest,
+  authenticatedTokenUsernameProvidedTest,
   tokenEndpointHitCallback
 } from './utils.ts';
 import { RedactMediaParams } from '../types.ts';
@@ -64,6 +65,13 @@ describe('test redactMedia functionality', () => {
   authenticatedTokenTests(secureRedact.fetchToken, secureRedact.redactMedia, {
     mediaId: requestParams.mediaId
   });
+  authenticatedTokenUsernameProvidedTest(
+    secureRedact.fetchToken,
+    secureRedact.redactMedia,
+    {
+      mediaId: requestParams.mediaId
+    }
+  );
 
   test('fails if redact route throws', async () => {
     const badError = 'bad error';

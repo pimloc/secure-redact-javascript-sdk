@@ -70,6 +70,7 @@ interface RedactMediaParams {
   enlargeBoxes?: number;
   redactAudio?: boolean;
   blur?: 'pixelated' | 'smooth';
+  username?: SecureRedactUsername;
 }
 
 interface SecureRedactRedactResponse {

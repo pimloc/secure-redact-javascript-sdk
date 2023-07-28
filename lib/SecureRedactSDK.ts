@@ -211,7 +211,8 @@ class SecureRedactSDK {
     mediaId,
     enlargeBoxes,
     redactAudio,
-    blur
+    blur,
+    username
   }: RedactMediaParams): Promise<SecureRedactRedactResponse> => {
     const data = await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.REDACT_MEDIA),
@@ -220,7 +221,8 @@ class SecureRedactSDK {
         enlarge_boxes: enlargeBoxes,
         redact_audio: redactAudio,
         blur
-      }
+      },
+      username
     );
 
     return {
