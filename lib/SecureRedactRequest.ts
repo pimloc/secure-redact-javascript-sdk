@@ -92,11 +92,10 @@ class SecureRedactRequest {
   static buildQueryParams = (obj: SecureRedactParamsData) => {
     const queryParams = [];
     for (const key in obj) {
-      let item = obj[key];
+      const item = obj[key];
       if (item !== undefined) {
-        item = item.toString();
         queryParams.push(
-          `${encodeURIComponent(key)}=${encodeURIComponent(item)}`
+          `${encodeURIComponent(key)}=${encodeURIComponent(item.toString())}`
         );
       }
     }
