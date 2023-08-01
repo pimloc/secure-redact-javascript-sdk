@@ -18,9 +18,9 @@ import {
   invalidAuthenticatedTokenTest,
   tokenEndpointHitCallback
 } from './utils.ts';
-import { LoginUserParams } from '../types.ts';
+import { SecureRedactLoginUserParams } from '../types/lib.ts';
 
-const requestParams: LoginUserParams = {
+const requestParams: SecureRedactLoginUserParams = {
   mediaId: 'random',
   username: 'test@test.com'
 };

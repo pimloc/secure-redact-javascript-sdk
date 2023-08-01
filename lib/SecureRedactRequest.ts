@@ -1,12 +1,12 @@
 import SecureRedactError from './SecureRedactError.ts';
-import { SecureRedactParamsData } from './types.ts';
+import { SecureRedactParams, SecureRedactResponse } from './types/internal.ts';
 
 class SecureRedactRequest {
   static makePostRequest = async (
     url: string,
-    data: SecureRedactParamsData,
+    data: SecureRedactParams,
     auth: string
-  ) => {
+  ): Promise<SecureRedactResponse> => {
     try {
       return await SecureRedactRequest.makeRequest(url, {
         method: 'POST',
@@ -14,7 +14,7 @@ class SecureRedactRequest {
           Accept: 'application/json',
           Authorization: auth
         },
-        body: JSON.stringify(data)
+        body: SecureRedactRequest.buildBody(data)
       });
     } catch (err) {
       if (err instanceof SecureRedactError) {
@@ -29,9 +29,9 @@ class SecureRedactRequest {
 
   static makeGetRequest = async (
     url: string,
-    params: SecureRedactParamsData,
+    params: SecureRedactParams,
     auth: string
-  ) => {
+  ): Promise<SecureRedactResponse> => {
     try {
       return await SecureRedactRequest.makeRequest(
         `${url}?${SecureRedactRequest.buildQueryParams(params)}`,
@@ -54,7 +54,10 @@ class SecureRedactRequest {
     }
   };
 
-  static makeRequest = async (url: string, options?: RequestInit) => {
+  static makeRequest = async (
+    url: string,
+    options?: RequestInit
+  ): Promise<SecureRedactResponse> => {
     try {
       const response = await fetch(url, options);
       const body = await response.json();
@@ -65,7 +68,7 @@ class SecureRedactRequest {
           response.status
         );
       }
-      return body;
+      return SecureRedactRequest.convertObjectToCamel(body);
     } catch (err) {
       if (err instanceof SecureRedactError) {
         throw err;
@@ -77,9 +80,10 @@ class SecureRedactRequest {
     }
   };
 
-  static buildBody = (obj: SecureRedactParamsData) => {
+  static buildBody = (obj: SecureRedactParams) => {
     try {
-      return JSON.stringify(obj);
+      const convertedObject = SecureRedactRequest.convertObjectToSnake(obj);
+      return JSON.stringify(convertedObject);
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(`Failed to stringify body: ${err.message}`);
@@ -89,13 +93,47 @@ class SecureRedactRequest {
     }
   };
 
-  static buildQueryParams = (obj: SecureRedactParamsData) => {
+  static convertObjectToCamel = (
+    obj: SecureRedactResponse
+  ): SecureRedactResponse => {
+    const convertedObject: SecureRedactResponse = {};
+
+    (Object.keys(obj) as Array<keyof SecureRedactResponse>).forEach(key => {
+      const camelCaseKey = SecureRedactRequest.snakeToCamel(key.toString());
+      convertedObject[camelCaseKey] = obj[key];
+    });
+
+    return convertedObject;
+  };
+
+  static convertObjectToSnake = (
+    obj: SecureRedactParams
+  ): SecureRedactParams => {
+    const convertedObject: SecureRedactParams = {};
+
+    (Object.keys(obj) as Array<keyof SecureRedactParams>).forEach(key => {
+      const snakeCaseKey = SecureRedactRequest.camelToSnake(key.toString());
+      convertedObject[snakeCaseKey] = obj[key];
+    });
+
+    return convertedObject;
+  };
+
+  static camelToSnake = (key: string): string =>
+    key.replace(/[A-Z]/g, match => `_${match.toLowerCase()}`);
+
+  static snakeToCamel = (key: string): string =>
+    key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+
+  static buildQueryParams = (obj: SecureRedactParams) => {
     const queryParams = [];
     for (const key in obj) {
       const item = obj[key];
       if (item !== undefined) {
         queryParams.push(
-          `${encodeURIComponent(key)}=${encodeURIComponent(item.toString())}`
+          `${encodeURIComponent(
+            SecureRedactRequest.camelToSnake(key)
+          )}=${encodeURIComponent(item.toString())}`
         );
       }
     }

@@ -21,7 +21,7 @@ import {
 const validResponse = {
   username: 'test@test.com',
   error: null as string | null,
-  msg: null as string | null
+  msg: undefined
 };
 
 const server = setupServer(

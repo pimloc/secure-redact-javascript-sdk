@@ -18,9 +18,9 @@ import {
   invalidAuthenticatedTokenTest,
   tokenEndpointHitCallback
 } from './utils.ts';
-import { DeleteMediaParams } from '../types.ts';
+import { SecureRedactDeleteMediaParams } from '../types/lib.ts';
 
-const requestParams: DeleteMediaParams = {
+const requestParams: SecureRedactDeleteMediaParams = {
   mediaId: 'random'
 };
 const validResponse = {

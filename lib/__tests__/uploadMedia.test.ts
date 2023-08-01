@@ -18,10 +18,10 @@ import {
   invalidAuthenticatedTokenTest,
   tokenEndpointHitCallback
 } from './utils.ts';
-import { UploadMediaParams } from '../types.ts';
+import { SecureRedactUploadMediaParams } from '../types/lib.ts';
 
 const videoTag = 'video_name';
-const requestParams: UploadMediaParams = {
+const requestParams: SecureRedactUploadMediaParams = {
   mediaPath: 's3://bucket/key.mp4?access_token=randomstring',
   videoTag,
   increasedDetectionAccuracy: true,
