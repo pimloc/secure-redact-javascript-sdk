@@ -94,9 +94,7 @@ class SecureRedactRequest {
     for (const key in obj) {
       let item = obj[key];
       if (item !== undefined) {
-        if (typeof obj[key] !== 'string') {
-          item = item.toString();
-        }
+        item = item.toString();
         queryParams.push(
           `${encodeURIComponent(key)}=${encodeURIComponent(item)}`
         );
