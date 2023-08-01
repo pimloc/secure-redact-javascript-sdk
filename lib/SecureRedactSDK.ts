@@ -12,7 +12,9 @@ import {
   SecureRedactUploadResponse,
   UploadMediaParams,
   SecureRedactParamsData,
-  SecureRedactResponseValue
+  SecureRedactResponseValue,
+  RedactMediaParams,
+  SecureRedactRedactResponse
 } from './types.ts';
 import SecureRedactError from './SecureRedactError.ts';
 
@@ -202,6 +204,29 @@ class SecureRedactSDK {
       mediaId: data.media_id,
       message: this.#parseToString(data.message) || undefined,
       error: this.#parseToString(data.error)
+    };
+  };
+
+  redactMedia = async ({
+    mediaId,
+    enlargeBoxes,
+    redactAudio,
+    blur,
+    username
+  }: RedactMediaParams): Promise<SecureRedactRedactResponse> => {
+    const data = await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.REDACT_MEDIA),
+      {
+        media_id: mediaId,
+        enlarge_boxes: enlargeBoxes,
+        redact_audio: redactAudio,
+        blur
+      },
+      username
+    );
+
+    return {
+      error: data.error ? data.error.toString() : null
     };
   };
 }

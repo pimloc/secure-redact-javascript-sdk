@@ -6,7 +6,8 @@ enum SecureRedactEndpoints {
   FETCH_TOKEN = 'token',
   FETCH_MEDIA_STATUS = 'info',
   CREATE_USER = 'signup',
-  UPLOAD_MEDIA = 'video'
+  UPLOAD_MEDIA = 'video',
+  REDACT_MEDIA = 'redact'
 }
 
 type SecureRedactResponseValue =
@@ -15,7 +16,10 @@ type SecureRedactResponseValue =
   | null
   | Record<string, string>;
 type SecureRedactResponseData = Record<string, SecureRedactResponseValue>;
-type SecureRedactParamsData = Record<string, string | undefined | boolean>;
+type SecureRedactParamsData = Record<
+  string,
+  string | boolean | number | undefined
+>;
 
 type FetchTokenParams = SecureRedactUsername | null;
 
@@ -61,6 +65,18 @@ interface SecureRedactUploadResponse {
   error: string | null;
 }
 
+interface RedactMediaParams {
+  mediaId: SecureRedactMediaId;
+  enlargeBoxes?: number;
+  redactAudio?: boolean;
+  blur?: 'pixelated' | 'smooth';
+  username?: SecureRedactUsername;
+}
+
+interface SecureRedactRedactResponse {
+  error: string | null;
+}
+
 export {
   SecureRedactResponseData,
   SecureRedactParamsData,
@@ -73,5 +89,7 @@ export {
   SecureRedactUserInfo,
   UploadMediaParams,
   SecureRedactUploadResponse,
-  SecureRedactResponseValue
+  SecureRedactResponseValue,
+  RedactMediaParams,
+  SecureRedactRedactResponse
 };
