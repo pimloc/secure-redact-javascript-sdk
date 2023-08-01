@@ -11,7 +11,8 @@ import {
   CreateUserParams,
   SecureRedactUploadResponse,
   UploadMediaParams,
-  SecureRedactParamsData
+  SecureRedactParamsData,
+  SecureRedactResponseValue
 } from './types.ts';
 import SecureRedactError from './SecureRedactError.ts';
 
@@ -32,6 +33,9 @@ class SecureRedactSDK {
     this.#basicToken = buildBasicToken(clientId, clientSecret);
     this.#bearerToken = null;
   }
+
+  #parseToString = (param: SecureRedactResponseValue) =>
+    param ? param.toString() : null;
 
   #setBearerToken = (token: string) => (this.#bearerToken = `Bearer ${token}`);
 
@@ -138,7 +142,7 @@ class SecureRedactSDK {
     return {
       mediaId: data.media_id,
       username: data.username,
-      error: data.error ? data.error.toString() : null,
+      error: this.#parseToString(data.error),
       status: data.status
     };
   };
@@ -157,8 +161,8 @@ class SecureRedactSDK {
 
     return {
       username: data.username,
-      msg: data.msg ? data.msg.toString() : null,
-      error: data.error ? data.error.toString() : null
+      msg: this.#parseToString(data.msg),
+      error: this.#parseToString(data.error)
     };
   };
 
@@ -196,8 +200,8 @@ class SecureRedactSDK {
         size: parseInt(data.file_info?.size || '0')
       },
       mediaId: data.media_id,
-      message: data.message ? data.message.toString() : undefined,
-      error: data.error ? data.error.toString() : null
+      message: this.#parseToString(data.message) || undefined,
+      error: this.#parseToString(data.error)
     };
   };
 }

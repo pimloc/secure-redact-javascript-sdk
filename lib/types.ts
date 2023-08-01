@@ -72,5 +72,6 @@ export {
   CreateUserParams,
   SecureRedactUserInfo,
   UploadMediaParams,
-  SecureRedactUploadResponse
+  SecureRedactUploadResponse,
+  SecureRedactResponseValue
 };
