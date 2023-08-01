@@ -41,9 +41,6 @@ class SecureRedactSDK {
     this.#bearerToken = null;
   }
 
-  // #parseToString = (param: SecureRedactResponseValue) =>
-  //   param ? param.toString() : null;
-
   #setBearerToken = (token: string) => (this.#bearerToken = `Bearer ${token}`);
 
   #buildUrlPath = (endpoint: string) =>
