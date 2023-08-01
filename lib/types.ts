@@ -5,11 +5,17 @@ type SecureRedactMediaId = string;
 enum SecureRedactEndpoints {
   FETCH_TOKEN = 'token',
   FETCH_MEDIA_STATUS = 'info',
-  CREATE_USER = 'signup'
+  CREATE_USER = 'signup',
+  UPLOAD_MEDIA = 'video'
 }
 
-type SecureRedactResponseValue = string | number | null;
+type SecureRedactResponseValue =
+  | string
+  | number
+  | null
+  | Record<string, string>;
 type SecureRedactResponseData = Record<string, SecureRedactResponseValue>;
+type SecureRedactParamsData = Record<string, string | undefined | boolean>;
 
 type FetchTokenParams = SecureRedactUsername | null;
 
@@ -35,13 +41,37 @@ interface SecureRedactUserInfo {
   msg: string | null;
 }
 
+interface UploadMediaParams {
+  mediaPath: string;
+  videoTag?: string;
+  increasedDetectionAccuracy?: boolean;
+  stateCallback?: string;
+  exportCallback?: string;
+  exportToken?: string;
+}
+
+interface SecureRedactUploadResponse {
+  fileInfo: {
+    name: string;
+    mimetype: string;
+    size: number;
+  };
+  mediaId: SecureRedactMediaId;
+  message?: string;
+  error: string | null;
+}
+
 export {
   SecureRedactResponseData,
+  SecureRedactParamsData,
   SecureRedactBearerToken,
   SecureRedactEndpoints,
   SecureRedactMediaInfo,
   FetchTokenParams,
   FetchMediaStatusParams,
   CreateUserParams,
-  SecureRedactUserInfo
+  SecureRedactUserInfo,
+  UploadMediaParams,
+  SecureRedactUploadResponse,
+  SecureRedactResponseValue
 };

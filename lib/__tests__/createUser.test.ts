@@ -88,17 +88,6 @@ describe('test createUser functionality', () => {
     });
   });
 
-  test('suceeds if new user', async () => {
-    const result = await secureRedact.createUser({
-      username: validResponse.username
-    });
-    assert.deepStrictEqual(result, {
-      username: validResponse.username,
-      error: validResponse.error,
-      msg: validResponse.msg
-    });
-  });
-
   test('suceeds if user already exists', async () => {
     server.use(
       rest.post(

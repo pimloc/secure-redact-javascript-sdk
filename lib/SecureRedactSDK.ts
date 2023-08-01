@@ -8,7 +8,11 @@ import {
   SecureRedactMediaInfo,
   SecureRedactResponseData,
   SecureRedactUserInfo,
-  CreateUserParams
+  CreateUserParams,
+  SecureRedactUploadResponse,
+  UploadMediaParams,
+  SecureRedactParamsData,
+  SecureRedactResponseValue
 } from './types.ts';
 import SecureRedactError from './SecureRedactError.ts';
 
@@ -30,6 +34,9 @@ class SecureRedactSDK {
     this.#bearerToken = null;
   }
 
+  #parseToString = (param: SecureRedactResponseValue) =>
+    param ? param.toString() : null;
+
   #setBearerToken = (token: string) => (this.#bearerToken = `Bearer ${token}`);
 
   #buildUrlPath = (endpoint: string) =>
@@ -38,11 +45,11 @@ class SecureRedactSDK {
   #makeAuthenticatedRequest = async (
     requester: (
       url: string,
-      params: Record<string, string>,
+      params: SecureRedactParamsData,
       auth: string
     ) => Promise<SecureRedactResponseData>,
     url: string,
-    params: Record<string, string>,
+    params: SecureRedactParamsData,
     username: string | undefined = undefined,
     retries = 0
   ): Promise<SecureRedactResponseData> => {
@@ -72,7 +79,7 @@ class SecureRedactSDK {
 
   #makeAuthenticatedPostRequest = async (
     url: string,
-    data: Record<string, string>,
+    data: SecureRedactParamsData,
     username?: string
   ) => {
     return await this.#makeAuthenticatedRequest(
@@ -85,7 +92,7 @@ class SecureRedactSDK {
 
   #makeAuthenticatedGetRequest = async (
     url: string,
-    params: Record<string, string>,
+    params: SecureRedactParamsData,
     username?: string
   ) => {
     return await this.#makeAuthenticatedRequest(
@@ -123,19 +130,19 @@ class SecureRedactSDK {
     );
 
     if (typeof data.media_id !== 'string') {
-      throw new SecureRedactError('Invalid mediaId type', 500);
+      throw new SecureRedactError('Invalid mediaId type returned', 500);
     }
     if (typeof data.username !== 'string') {
-      throw new SecureRedactError('Invalid username type', 500);
+      throw new SecureRedactError('Invalid username type returned', 500);
     }
     if (typeof data.status !== 'string') {
-      throw new SecureRedactError('Invalid status type', 500);
+      throw new SecureRedactError('Invalid status type returned', 500);
     }
 
     return {
       mediaId: data.media_id,
       username: data.username,
-      error: data.error ? data.error.toString() : null,
+      error: this.#parseToString(data.error),
       status: data.status
     };
   };
@@ -149,13 +156,52 @@ class SecureRedactSDK {
     );
 
     if (typeof data.username !== 'string') {
-      throw new SecureRedactError('Invalid username type', 500);
+      throw new SecureRedactError('Invalid username type returned', 500);
     }
 
     return {
       username: data.username,
-      msg: data.msg ? data.msg.toString() : null,
-      error: data.error ? data.error.toString() : null
+      msg: this.#parseToString(data.msg),
+      error: this.#parseToString(data.error)
+    };
+  };
+
+  uploadMedia = async ({
+    mediaPath,
+    videoTag,
+    increasedDetectionAccuracy,
+    stateCallback,
+    exportCallback,
+    exportToken
+  }: UploadMediaParams): Promise<SecureRedactUploadResponse> => {
+    const data = await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
+      {
+        media_path: mediaPath,
+        video_tag: videoTag,
+        increased_detection_accuracy: increasedDetectionAccuracy,
+        state_callback: stateCallback,
+        export_callback: exportCallback,
+        export_token: exportToken
+      }
+    );
+
+    if (typeof data.media_id !== 'string') {
+      throw new SecureRedactError('Invalid media_id type returned', 500);
+    }
+    if (typeof data.file_info !== 'object') {
+      throw new SecureRedactError('Invalid file_info type returned', 500);
+    }
+
+    return {
+      fileInfo: {
+        name: data.file_info?.name?.toString() || '',
+        mimetype: data.file_info?.mimetype?.toString() || '',
+        size: parseInt(data.file_info?.size || '0')
+      },
+      mediaId: data.media_id,
+      message: this.#parseToString(data.message) || undefined,
+      error: this.#parseToString(data.error)
     };
   };
 }
