@@ -14,7 +14,9 @@ import {
   SecureRedactParamsData,
   SecureRedactResponseValue,
   RedactMediaParams,
-  SecureRedactRedactResponse
+  SecureRedactRedactResponse,
+  DeleteMediaParams,
+  SecureRedactDeleteMediaResponse
 } from './types.ts';
 import SecureRedactError from './SecureRedactError.ts';
 
@@ -226,6 +228,30 @@ class SecureRedactSDK {
     );
 
     return {
+      error: data.error ? data.error.toString() : null
+    };
+  };
+
+  deleteMedia = async ({
+    mediaId
+  }: DeleteMediaParams): Promise<SecureRedactDeleteMediaResponse> => {
+    const data = await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.DELETE_MEDIA),
+      {
+        media_id: mediaId
+      }
+    );
+
+    if (typeof data.media_id !== 'string') {
+      throw new SecureRedactError('Invalid media_id type returned', 500);
+    }
+    if (typeof data.message !== 'string') {
+      throw new SecureRedactError('Invalid message type returned', 500);
+    }
+
+    return {
+      mediaId: data.media_id,
+      message: data.message,
       error: data.error ? data.error.toString() : null
     };
   };

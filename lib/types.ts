@@ -7,7 +7,8 @@ enum SecureRedactEndpoints {
   FETCH_MEDIA_STATUS = 'info',
   CREATE_USER = 'signup',
   UPLOAD_MEDIA = 'video',
-  REDACT_MEDIA = 'redact'
+  REDACT_MEDIA = 'redact',
+  DELETE_MEDIA = 'video/delete'
 }
 
 type SecureRedactResponseValue =
@@ -77,6 +78,16 @@ interface SecureRedactRedactResponse {
   error: string | null;
 }
 
+interface DeleteMediaParams {
+  mediaId: SecureRedactMediaId;
+}
+
+interface SecureRedactDeleteMediaResponse {
+  error: string | null;
+  message: string;
+  mediaId: SecureRedactMediaId;
+}
+
 export {
   SecureRedactResponseData,
   SecureRedactParamsData,
@@ -91,5 +102,7 @@ export {
   SecureRedactUploadResponse,
   SecureRedactResponseValue,
   RedactMediaParams,
-  SecureRedactRedactResponse
+  SecureRedactRedactResponse,
+  DeleteMediaParams,
+  SecureRedactDeleteMediaResponse
 };
