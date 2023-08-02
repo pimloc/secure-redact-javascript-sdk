@@ -1,26 +1,27 @@
 import { buildBasicToken } from './utils/buildBasicToken.ts';
 import { SecureRedactRequest } from './SecureRedactRequest.ts';
-import {
-  FetchMediaStatusParams,
-  FetchTokenParams,
-  SecureRedactBearerToken,
-  SecureRedactEndpoints,
-  SecureRedactMediaInfo,
-  SecureRedactResponseData,
-  SecureRedactUserInfo,
-  CreateUserParams,
-  SecureRedactUploadResponse,
-  UploadMediaParams,
-  SecureRedactParamsData,
-  SecureRedactResponseValue,
-  RedactMediaParams,
-  SecureRedactRedactResponse,
-  DeleteMediaParams,
-  SecureRedactDeleteMediaResponse,
-  LoginUserParams,
-  SecureRedactLoginResponse
-} from './types.ts';
 import SecureRedactError from './SecureRedactError.ts';
+import {
+  SecureRedactFetchMediaStatusParams,
+  SecureRedactFetchTokenParams,
+  SecureRedactBearerToken,
+  SecureRedactMediaInfo,
+  SecureRedactUserInfo,
+  SecureRedactCreateUserParams,
+  SecureRedactUploadResponse,
+  SecureRedactUploadMediaParams,
+  SecureRedactRedactMediaParams,
+  SecureRedactRedactResponse,
+  SecureRedactDeleteMediaParams,
+  SecureRedactDeleteMediaResponse,
+  SecureRedactLoginUserParams,
+  SecureRedactLoginResponse
+} from './types/lib.ts';
+import {
+  SecureRedactEndpoints,
+  SecureRedactParams,
+  SecureRedactResponse
+} from './types/internal.ts';
 
 class SecureRedactSDK {
   readonly #BASE_URL: string = 'https://app.secureredact.co.uk';
@@ -40,9 +41,6 @@ class SecureRedactSDK {
     this.#bearerToken = null;
   }
 
-  #parseToString = (param: SecureRedactResponseValue) =>
-    param ? param.toString() : null;
-
   #setBearerToken = (token: string) => (this.#bearerToken = `Bearer ${token}`);
 
   #buildUrlPath = (endpoint: string) =>
@@ -51,17 +49,17 @@ class SecureRedactSDK {
   #makeAuthenticatedRequest = async (
     requester: (
       url: string,
-      params: SecureRedactParamsData,
+      params: SecureRedactParams,
       auth: string
-    ) => Promise<SecureRedactResponseData>,
+    ) => Promise<SecureRedactResponse>,
     url: string,
-    params: SecureRedactParamsData,
-    username: string | undefined = undefined,
+    params: SecureRedactParams,
+    username?: string,
     retries = 0
-  ): Promise<SecureRedactResponseData> => {
+  ): Promise<SecureRedactResponse> => {
     try {
       if (username || !this.#bearerToken) {
-        this.#bearerToken = await this.fetchToken(username);
+        this.#bearerToken = await this.fetchToken({ username });
       }
       return await requester(url, params, this.#bearerToken);
     } catch (err) {
@@ -85,7 +83,7 @@ class SecureRedactSDK {
 
   #makeAuthenticatedPostRequest = async (
     url: string,
-    data: SecureRedactParamsData,
+    data: SecureRedactParams,
     username?: string
   ) => {
     return await this.#makeAuthenticatedRequest(
@@ -98,7 +96,7 @@ class SecureRedactSDK {
 
   #makeAuthenticatedGetRequest = async (
     url: string,
-    params: SecureRedactParamsData,
+    params: SecureRedactParams,
     username?: string
   ) => {
     return await this.#makeAuthenticatedRequest(
@@ -109,9 +107,9 @@ class SecureRedactSDK {
     );
   };
 
-  fetchToken = async (
-    username: FetchTokenParams = null
-  ): Promise<SecureRedactBearerToken> => {
+  fetchToken = async ({
+    username
+  }: SecureRedactFetchTokenParams = {}): Promise<SecureRedactBearerToken> => {
     const data = await SecureRedactRequest.makeGetRequest(
       this.#buildUrlPath(SecureRedactEndpoints.FETCH_TOKEN),
       username ? { username } : {},
@@ -128,14 +126,14 @@ class SecureRedactSDK {
   fetchMediaStatus = async ({
     mediaId,
     username
-  }: FetchMediaStatusParams): Promise<SecureRedactMediaInfo> => {
+  }: SecureRedactFetchMediaStatusParams): Promise<SecureRedactMediaInfo> => {
     const data = await this.#makeAuthenticatedGetRequest(
       this.#buildUrlPath(SecureRedactEndpoints.FETCH_MEDIA_STATUS),
       { mediaId },
       username
     );
 
-    if (typeof data.media_id !== 'string') {
+    if (typeof data.mediaId !== 'string') {
       throw new SecureRedactError('Invalid mediaId type returned', 500);
     }
     if (typeof data.username !== 'string') {
@@ -146,16 +144,16 @@ class SecureRedactSDK {
     }
 
     return {
-      mediaId: data.media_id,
+      mediaId: data.mediaId,
       username: data.username,
-      error: this.#parseToString(data.error),
+      error: data.error?.toString() || null,
       status: data.status
     };
   };
 
   createUser = async ({
     username
-  }: CreateUserParams): Promise<SecureRedactUserInfo> => {
+  }: SecureRedactCreateUserParams): Promise<SecureRedactUserInfo> => {
     const data = await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.CREATE_USER),
       { username }
@@ -167,24 +165,24 @@ class SecureRedactSDK {
 
     return {
       username: data.username,
-      msg: this.#parseToString(data.msg),
-      error: this.#parseToString(data.error)
+      msg: data.msg?.toString(),
+      error: data.error?.toString() || null
     };
   };
 
   loginUser = async ({
     username,
     mediaId
-  }: LoginUserParams): Promise<SecureRedactLoginResponse> => {
+  }: SecureRedactLoginUserParams): Promise<SecureRedactLoginResponse> => {
     const data = await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.LOGIN_USER),
       {
-        media_id: mediaId
+        mediaId
       },
       username
     );
 
-    if (typeof data.redirect_url !== 'string') {
+    if (typeof data.redirectUrl !== 'string') {
       throw new SecureRedactError('Invalid redirect_url type returned', 500);
     }
     if (typeof data.success !== 'boolean') {
@@ -192,7 +190,7 @@ class SecureRedactSDK {
     }
 
     return {
-      redirectUrl: data.redirect_url,
+      redirectUrl: data.redirectUrl,
       success: data.success
     };
   };
@@ -204,35 +202,35 @@ class SecureRedactSDK {
     stateCallback,
     exportCallback,
     exportToken
-  }: UploadMediaParams): Promise<SecureRedactUploadResponse> => {
+  }: SecureRedactUploadMediaParams): Promise<SecureRedactUploadResponse> => {
     const data = await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
       {
-        media_path: mediaPath,
-        video_tag: videoTag,
-        increased_detection_accuracy: increasedDetectionAccuracy,
-        state_callback: stateCallback,
-        export_callback: exportCallback,
-        export_token: exportToken
+        mediaPath,
+        videoTag,
+        increasedDetectionAccuracy,
+        stateCallback,
+        exportCallback,
+        exportToken
       }
     );
 
-    if (typeof data.media_id !== 'string') {
+    if (typeof data.mediaId !== 'string') {
       throw new SecureRedactError('Invalid media_id type returned', 500);
     }
-    if (typeof data.file_info !== 'object') {
+    if (typeof data.fileInfo !== 'object') {
       throw new SecureRedactError('Invalid file_info type returned', 500);
     }
 
     return {
       fileInfo: {
-        name: data.file_info?.name?.toString() || '',
-        mimetype: data.file_info?.mimetype?.toString() || '',
-        size: parseInt(data.file_info?.size || '0')
+        name: data.fileInfo?.name?.toString() || '',
+        mimetype: data.fileInfo?.mimetype?.toString() || '',
+        size: parseInt(data.fileInfo?.size?.toString() || '0')
       },
-      mediaId: data.media_id,
-      message: this.#parseToString(data.message) || undefined,
-      error: this.#parseToString(data.error)
+      mediaId: data.mediaId,
+      message: data.message?.toString(),
+      error: data.error?.toString() || null
     };
   };
 
@@ -242,44 +240,44 @@ class SecureRedactSDK {
     redactAudio,
     blur,
     username
-  }: RedactMediaParams): Promise<SecureRedactRedactResponse> => {
+  }: SecureRedactRedactMediaParams): Promise<SecureRedactRedactResponse> => {
     const data = await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.REDACT_MEDIA),
       {
-        media_id: mediaId,
-        enlarge_boxes: enlargeBoxes,
-        redact_audio: redactAudio,
+        mediaId,
+        enlargeBoxes,
+        redactAudio,
         blur
       },
       username
     );
 
     return {
-      error: data.error ? data.error.toString() : null
+      error: data.error?.toString() || null
     };
   };
 
   deleteMedia = async ({
     mediaId
-  }: DeleteMediaParams): Promise<SecureRedactDeleteMediaResponse> => {
+  }: SecureRedactDeleteMediaParams): Promise<SecureRedactDeleteMediaResponse> => {
     const data = await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.DELETE_MEDIA),
       {
-        media_id: mediaId
+        mediaId
       }
     );
 
-    if (typeof data.media_id !== 'string') {
-      throw new SecureRedactError('Invalid media_id type returned', 500);
+    if (typeof data.mediaId !== 'string') {
+      throw new SecureRedactError('Invalid mediaId type returned', 500);
     }
     if (typeof data.message !== 'string') {
       throw new SecureRedactError('Invalid message type returned', 500);
     }
 
     return {
-      mediaId: data.media_id,
+      mediaId: data.mediaId,
       message: data.message,
-      error: data.error ? data.error.toString() : null
+      error: data.error?.toString() || null
     };
   };
 }

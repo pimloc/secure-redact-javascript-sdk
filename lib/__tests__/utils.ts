@@ -5,6 +5,7 @@ import { mock } from 'node:test';
 import { rest } from 'msw';
 
 import { SecureRedactSDK } from '../SecureRedactSDK.ts';
+import { SecureRedactFetchTokenParams } from '../types/lib.ts';
 
 const creds = {
   clientId: 'clientId',
@@ -42,7 +43,9 @@ const invalidAuthenticatedTokenTest = (method: any, data: any) => {
 };
 
 const authenticatedTokenTests = (
-  fetchToken: () => ReturnType<SecureRedactSDK['fetchToken']>,
+  fetchToken: (
+    arg?: SecureRedactFetchTokenParams
+  ) => ReturnType<SecureRedactSDK['fetchToken']>,
   method: any,
   data: any
 ) => {
@@ -60,7 +63,9 @@ const authenticatedTokenTests = (
 };
 
 const authenticatedTokenUsernameProvidedTest = (
-  fetchToken: () => ReturnType<SecureRedactSDK['fetchToken']>,
+  fetchToken: (
+    arg?: SecureRedactFetchTokenParams
+  ) => ReturnType<SecureRedactSDK['fetchToken']>,
   method: any,
   data: any
 ) => {

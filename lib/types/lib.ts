@@ -1,33 +1,22 @@
+// general
 type SecureRedactUsername = string;
 type SecureRedactBearerToken = string;
 type SecureRedactMediaId = string;
 
-enum SecureRedactEndpoints {
-  FETCH_TOKEN = 'token',
-  FETCH_MEDIA_STATUS = 'info',
-  CREATE_USER = 'signup',
-  UPLOAD_MEDIA = 'video',
-  REDACT_MEDIA = 'redact',
-  DELETE_MEDIA = 'video/delete',
-  LOGIN_USER = 'login'
+// fetch token
+interface SecureRedactFetchTokenParams {
+  username?: SecureRedactUsername;
 }
 
-type SecureRedactResponseValue =
-  | string
-  | number
-  | null
-  | Record<string, string>;
-type SecureRedactResponseData = Record<string, SecureRedactResponseValue>;
-type SecureRedactParamsData = Record<
-  string,
-  string | boolean | number | undefined
->;
-
-type FetchTokenParams = SecureRedactUsername | null;
-
-interface FetchMediaStatusParams {
+// fetch media status
+interface SecureRedactFetchMediaStatusParams {
   mediaId: SecureRedactMediaId;
   username?: SecureRedactUsername;
+}
+
+interface SecureRedactFetchTokenResponse {
+  token: SecureRedactBearerToken;
+  error: string | null;
 }
 
 interface SecureRedactMediaInfo {
@@ -37,17 +26,19 @@ interface SecureRedactMediaInfo {
   status: string;
 }
 
-interface CreateUserParams {
+// create user
+interface SecureRedactCreateUserParams {
   username: SecureRedactUsername;
 }
 
 interface SecureRedactUserInfo {
   username: SecureRedactUsername;
   error: string | null;
-  msg: string | null;
+  msg?: string;
 }
 
-interface UploadMediaParams {
+// upload media
+interface SecureRedactUploadMediaParams {
   mediaPath: string;
   videoTag?: string;
   increasedDetectionAccuracy?: boolean;
@@ -67,7 +58,8 @@ interface SecureRedactUploadResponse {
   error: string | null;
 }
 
-interface RedactMediaParams {
+// redact media
+interface SecureRedactRedactMediaParams {
   mediaId: SecureRedactMediaId;
   enlargeBoxes?: number;
   redactAudio?: boolean;
@@ -79,7 +71,8 @@ interface SecureRedactRedactResponse {
   error: string | null;
 }
 
-interface DeleteMediaParams {
+// delete media
+interface SecureRedactDeleteMediaParams {
   mediaId: SecureRedactMediaId;
 }
 
@@ -89,7 +82,8 @@ interface SecureRedactDeleteMediaResponse {
   mediaId: SecureRedactMediaId;
 }
 
-interface LoginUserParams {
+// login user
+interface SecureRedactLoginUserParams {
   username: SecureRedactUsername;
   mediaId: SecureRedactMediaId;
 }
@@ -100,22 +94,19 @@ interface SecureRedactLoginResponse {
 }
 
 export {
-  SecureRedactResponseData,
-  SecureRedactParamsData,
   SecureRedactBearerToken,
-  SecureRedactEndpoints,
+  SecureRedactFetchTokenParams,
+  SecureRedactFetchTokenResponse,
+  SecureRedactFetchMediaStatusParams,
   SecureRedactMediaInfo,
-  FetchTokenParams,
-  FetchMediaStatusParams,
-  CreateUserParams,
+  SecureRedactCreateUserParams,
   SecureRedactUserInfo,
-  UploadMediaParams,
+  SecureRedactUploadMediaParams,
   SecureRedactUploadResponse,
-  SecureRedactResponseValue,
-  RedactMediaParams,
+  SecureRedactRedactMediaParams,
   SecureRedactRedactResponse,
-  DeleteMediaParams,
+  SecureRedactDeleteMediaParams,
   SecureRedactDeleteMediaResponse,
-  LoginUserParams,
+  SecureRedactLoginUserParams,
   SecureRedactLoginResponse
 };

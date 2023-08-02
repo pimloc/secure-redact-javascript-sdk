@@ -19,9 +19,9 @@ import {
   authenticatedTokenUsernameProvidedTest,
   tokenEndpointHitCallback
 } from './utils.ts';
-import { RedactMediaParams } from '../types.ts';
+import { SecureRedactRedactMediaParams } from '../types/lib.ts';
 
-const requestParams: RedactMediaParams = {
+const requestParams: SecureRedactRedactMediaParams = {
   mediaId: 'random',
   enlargeBoxes: 0.5,
   redactAudio: true,

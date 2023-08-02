@@ -17,6 +17,6 @@ describe('test buildQueryParams functionality', () => {
       testB: '2',
       testC: '3'
     });
-    assert.strictEqual(result, 'testA=1&testB=2&testC=3');
+    assert.strictEqual(result, 'test_a=1&test_b=2&test_c=3');
   });
 });

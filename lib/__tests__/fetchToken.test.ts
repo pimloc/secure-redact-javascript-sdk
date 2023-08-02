@@ -69,7 +69,7 @@ describe('test fetchToken functionality', () => {
       clientId: creds.clientId,
       clientSecret: creds.clientSecret
     });
-    const token = await secureRedact.fetchToken(dummyUsername);
+    const token = await secureRedact.fetchToken({ username: dummyUsername });
     assert.strictEqual(token, validData.token);
     assert.strictEqual(mockCallback.mock.calls.length, 1);
     assert.strictEqual(mockCallback.mock.calls[0].arguments[0], dummyUsername);
