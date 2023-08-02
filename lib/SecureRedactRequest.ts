@@ -79,7 +79,6 @@ class SecureRedactRequest {
       }
     }
   };
-
   static buildBody = (obj: SecureRedactParams) => {
     try {
       const convertedObject = SecureRedactRequest.convertObjectToSnake(obj);
@@ -129,7 +128,7 @@ class SecureRedactRequest {
     const queryParams = [];
     for (const key in obj) {
       const item = obj[key];
-      if (item !== undefined) {
+      if (item !== undefined && item !== null) {
         queryParams.push(
           `${encodeURIComponent(
             SecureRedactRequest.camelToSnake(key)

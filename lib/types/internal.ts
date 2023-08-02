@@ -25,23 +25,32 @@ enum SecureRedactEndpoints {
   LOGIN_USER = 'login'
 }
 
-type SecureRedactParams =
-  | SecureRedactFetchTokenParams
-  | SecureRedactLoginUserParams
-  | SecureRedactCreateUserParams
-  | SecureRedactDeleteMediaParams
-  | SecureRedactLoginUserParams
-  | SecureRedactRedactMediaParams
-  | SecureRedactUploadMediaParams
-  | SecureRedactFetchMediaStatusParams;
+interface SecureRedactParams
+  extends Partial<SecureRedactCreateUserParams>,
+    Partial<SecureRedactDeleteMediaParams>,
+    Partial<SecureRedactFetchMediaStatusParams>,
+    Partial<SecureRedactFetchTokenParams>,
+    Partial<SecureRedactLoginUserParams>,
+    Partial<SecureRedactRedactMediaParams>,
+    Partial<SecureRedactUploadMediaParams> {
+  [key: string]: string | number | boolean | undefined | null;
+}
 
-type SecureRedactResponse =
-  | SecureRedactRedactResponse
-  | SecureRedactLoginResponse
-  | SecureRedactUploadResponse
-  | SecureRedactMediaInfo
-  | SecureRedactUserInfo
-  | SecureRedactFetchTokenResponse
-  | SecureRedactDeleteMediaResponse;
+interface SecureRedactResponse
+  extends Partial<SecureRedactDeleteMediaResponse>,
+    Partial<SecureRedactFetchTokenResponse>,
+    Partial<SecureRedactLoginResponse>,
+    Partial<SecureRedactMediaInfo>,
+    Partial<SecureRedactRedactResponse>,
+    Partial<SecureRedactUploadResponse>,
+    Partial<SecureRedactUserInfo> {
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | Record<string, string | number>
+    | undefined
+    | null;
+}
 
 export { SecureRedactEndpoints, SecureRedactParams, SecureRedactResponse };

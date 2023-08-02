@@ -3,37 +3,23 @@ type SecureRedactUsername = string;
 type SecureRedactBearerToken = string;
 type SecureRedactMediaId = string;
 
-interface Params {
-  [key: string]: string | number | boolean | undefined | null;
-}
-
-interface Response {
-  [key: string]:
-    | string
-    | number
-    | boolean
-    | Record<string, string | number>
-    | undefined
-    | null;
-}
-
 // fetch token
-interface SecureRedactFetchTokenParams extends Params {
+interface SecureRedactFetchTokenParams {
   username?: SecureRedactUsername;
 }
 
-interface SecureRedactFetchTokenResponse extends Response {
-  token: SecureRedactBearerToken;
-  error: string | null;
-}
-
 // fetch media status
-interface SecureRedactFetchMediaStatusParams extends Params {
+interface SecureRedactFetchMediaStatusParams {
   mediaId: SecureRedactMediaId;
   username?: SecureRedactUsername;
 }
 
-interface SecureRedactMediaInfo extends Response {
+interface SecureRedactFetchTokenResponse {
+  token: SecureRedactBearerToken;
+  error: string | null;
+}
+
+interface SecureRedactMediaInfo {
   mediaId: SecureRedactMediaId;
   username: SecureRedactUsername;
   error: string | null;
@@ -41,18 +27,18 @@ interface SecureRedactMediaInfo extends Response {
 }
 
 // create user
-interface SecureRedactCreateUserParams extends Params {
+interface SecureRedactCreateUserParams {
   username: SecureRedactUsername;
 }
 
-interface SecureRedactUserInfo extends Response {
+interface SecureRedactUserInfo {
   username: SecureRedactUsername;
   error: string | null;
   msg?: string;
 }
 
 // upload media
-interface SecureRedactUploadMediaParams extends Params {
+interface SecureRedactUploadMediaParams {
   mediaPath: string;
   videoTag?: string;
   increasedDetectionAccuracy?: boolean;
@@ -61,7 +47,7 @@ interface SecureRedactUploadMediaParams extends Params {
   exportToken?: string;
 }
 
-interface SecureRedactUploadResponse extends Response {
+interface SecureRedactUploadResponse {
   fileInfo: {
     name: string;
     mimetype: string;
@@ -73,7 +59,7 @@ interface SecureRedactUploadResponse extends Response {
 }
 
 // redact media
-interface SecureRedactRedactMediaParams extends Params {
+interface SecureRedactRedactMediaParams {
   mediaId: SecureRedactMediaId;
   enlargeBoxes?: number;
   redactAudio?: boolean;
@@ -81,28 +67,28 @@ interface SecureRedactRedactMediaParams extends Params {
   username?: SecureRedactUsername;
 }
 
-interface SecureRedactRedactResponse extends Response {
+interface SecureRedactRedactResponse {
   error: string | null;
 }
 
 // delete media
-interface SecureRedactDeleteMediaParams extends Params {
+interface SecureRedactDeleteMediaParams {
   mediaId: SecureRedactMediaId;
 }
 
-interface SecureRedactDeleteMediaResponse extends Response {
+interface SecureRedactDeleteMediaResponse {
   error: string | null;
   message: string;
   mediaId: SecureRedactMediaId;
 }
 
 // login user
-interface SecureRedactLoginUserParams extends Params {
+interface SecureRedactLoginUserParams {
   username: SecureRedactUsername;
   mediaId: SecureRedactMediaId;
 }
 
-interface SecureRedactLoginResponse extends Response {
+interface SecureRedactLoginResponse {
   redirectUrl: string;
   success: boolean;
 }
