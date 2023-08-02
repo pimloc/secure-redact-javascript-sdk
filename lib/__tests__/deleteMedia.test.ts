@@ -10,15 +10,15 @@ import {
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
 import {
   authenticatedTokenTests,
   creds,
   defaultHandlers,
   invalidAuthenticatedTokenTest,
   tokenEndpointHitCallback
-} from './utils.ts';
-import { SecureRedactDeleteMediaParams } from '../types/lib.ts';
+} from './utils';
+import { SecureRedactDeleteMediaParams } from '../types/lib';
 
 const requestParams: SecureRedactDeleteMediaParams = {
   mediaId: 'random'

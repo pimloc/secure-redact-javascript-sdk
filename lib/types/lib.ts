@@ -8,15 +8,15 @@ interface SecureRedactFetchTokenParams {
   username?: SecureRedactUsername;
 }
 
+interface SecureRedactFetchTokenResponse {
+  token: SecureRedactBearerToken;
+  error: string | null;
+}
+
 // fetch media status
 interface SecureRedactFetchMediaStatusParams {
   mediaId: SecureRedactMediaId;
   username?: SecureRedactUsername;
-}
-
-interface SecureRedactFetchTokenResponse {
-  token: SecureRedactBearerToken;
-  error: string | null;
 }
 
 interface SecureRedactMediaInfo {

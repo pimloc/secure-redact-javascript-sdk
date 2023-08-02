@@ -7,12 +7,13 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "moduleResolution": "NodeNext",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
+    "moduleResolution": "Node",
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./lib",
     "strict": true
   },
   "include": ["./lib"],
-  "exclude": ["./node_modules"],
+  "exclude": ["./node_modules", "./lib/__tests__/**/*"],
   "allowImportingTsExtensions": true
 }

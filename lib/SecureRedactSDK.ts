@@ -1,6 +1,6 @@
-import { buildBasicToken } from './utils/buildBasicToken.ts';
-import { SecureRedactRequest } from './SecureRedactRequest.ts';
-import SecureRedactError from './SecureRedactError.ts';
+import { buildBasicToken } from './utils/buildBasicToken.js';
+import { SecureRedactRequest } from './SecureRedactRequest.js';
+import SecureRedactError from './SecureRedactError.js';
 import {
   SecureRedactFetchMediaStatusParams,
   SecureRedactFetchTokenParams,
@@ -16,12 +16,12 @@ import {
   SecureRedactDeleteMediaResponse,
   SecureRedactLoginUserParams,
   SecureRedactLoginResponse
-} from './types/lib.ts';
+} from './types/lib.js';
 import {
   SecureRedactEndpoints,
   SecureRedactParams,
   SecureRedactResponse
-} from './types/internal.ts';
+} from './types/internal.js';
 
 class SecureRedactSDK {
   readonly #BASE_URL: string = 'https://app.secureredact.co.uk';
@@ -119,8 +119,9 @@ class SecureRedactSDK {
       throw new SecureRedactError('Invalid token type', 500);
     }
     // store token for future use
-    this.#setBearerToken(data.token);
-    return data.token;
+    const bearerToken = `Bearer ${data.token}`;
+    this.#setBearerToken(bearerToken);
+    return bearerToken;
   };
 
   fetchMediaStatus = async ({

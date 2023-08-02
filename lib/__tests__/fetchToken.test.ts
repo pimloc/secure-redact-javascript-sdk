@@ -2,8 +2,8 @@ import { test, describe, mock, before, afterEach, after } from 'node:test';
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
-import { creds } from './utils.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
+import { creds } from './utils';
 
 const dummyUsername = 'test@test.com';
 const validData: { error: string | null; token: string } = {

@@ -1,4 +1,4 @@
-import SecureRedactError from '../SecureRedactError.ts';
+import SecureRedactError from '../SecureRedactError.js';
 
 const buildBasicToken = (clientId: string, clientSecret: string): string => {
   if (!clientId || !clientSecret) {

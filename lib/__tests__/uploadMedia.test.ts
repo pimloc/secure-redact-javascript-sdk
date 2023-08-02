@@ -10,15 +10,15 @@ import {
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
 import {
   authenticatedTokenTests,
   creds,
   defaultHandlers,
   invalidAuthenticatedTokenTest,
   tokenEndpointHitCallback
-} from './utils.ts';
-import { SecureRedactUploadMediaParams } from '../types/lib.ts';
+} from './utils';
+import { SecureRedactUploadMediaParams } from '../types/lib';
 
 const videoTag = 'video_name';
 const requestParams: SecureRedactUploadMediaParams = {

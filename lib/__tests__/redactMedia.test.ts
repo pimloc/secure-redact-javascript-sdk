@@ -10,7 +10,7 @@ import {
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
 import {
   authenticatedTokenTests,
   creds,
@@ -18,8 +18,8 @@ import {
   invalidAuthenticatedTokenTest,
   authenticatedTokenUsernameProvidedTest,
   tokenEndpointHitCallback
-} from './utils.ts';
-import { SecureRedactRedactMediaParams } from '../types/lib.ts';
+} from './utils';
+import { SecureRedactRedactMediaParams } from '../types/lib';
 
 const requestParams: SecureRedactRedactMediaParams = {
   mediaId: 'random',
