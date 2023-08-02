@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import * as assert from 'node:assert';
-import { buildBasicToken } from '../utils/buildBasicToken.ts';
+import { buildBasicToken } from '../utils/buildBasicToken';
 
 const clientId = 'clientId';
 const clientSecret = 'clientSecret';

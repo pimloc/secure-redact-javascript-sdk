@@ -2,8 +2,8 @@ import { test, describe, mock, before, afterEach, after } from 'node:test';
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
-import { creds } from './utils.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
+import { creds } from './utils';
 
 const dummyUsername = 'test@test.com';
 const validData: { error: string | null; token: string } = {
@@ -61,7 +61,7 @@ describe('test fetchToken functionality', () => {
       clientSecret: creds.clientSecret
     });
     const token = await secureRedact.fetchToken();
-    assert.strictEqual(token, validData.token);
+    assert.strictEqual(token, `Bearer ${validData.token}`);
   });
 
   test('fetch token suceeds with valid credentials and username', async () => {
@@ -70,7 +70,7 @@ describe('test fetchToken functionality', () => {
       clientSecret: creds.clientSecret
     });
     const token = await secureRedact.fetchToken({ username: dummyUsername });
-    assert.strictEqual(token, validData.token);
+    assert.strictEqual(token, `Bearer ${validData.token}`);
     assert.strictEqual(mockCallback.mock.calls.length, 1);
     assert.strictEqual(mockCallback.mock.calls[0].arguments[0], dummyUsername);
   });

@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { test } from 'node:test';
+import { test, mock } from 'node:test';
 import * as assert from 'node:assert';
-import { mock } from 'node:test';
 import { rest } from 'msw';
 
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
-import { SecureRedactFetchTokenParams } from '../types/lib.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
+import { SecureRedactFetchTokenParams } from '../types/lib';
 
 const creds = {
   clientId: 'clientId',

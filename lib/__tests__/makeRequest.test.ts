@@ -2,7 +2,7 @@ import { test, describe, before, afterEach, after } from 'node:test';
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactRequest } from '../SecureRedactRequest.ts';
+import { SecureRedactRequest } from '../SecureRedactRequest';
 
 const validData = { token: 'valid_token' };
 const authToken = 'valid_auth_header_token';

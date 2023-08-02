@@ -9,7 +9,7 @@ import {
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
 import {
   authenticatedTokenTests,
   creds,
@@ -17,7 +17,7 @@ import {
   invalidAuthenticatedTokenTest,
   authenticatedTokenUsernameProvidedTest,
   tokenEndpointHitCallback
-} from './utils.ts';
+} from './utils';
 
 const validResponse = {
   media_id: 'random',

@@ -10,15 +10,15 @@ import {
 import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { SecureRedactSDK } from '../SecureRedactSDK.ts';
+import { SecureRedactSDK } from '../SecureRedactSDK';
 import {
   authenticatedTokenUsernameProvidedTest,
   creds,
   defaultHandlers,
   invalidAuthenticatedTokenTest,
   tokenEndpointHitCallback
-} from './utils.ts';
-import { SecureRedactLoginUserParams } from '../types/lib.ts';
+} from './utils';
+import { SecureRedactLoginUserParams } from '../types/lib';
 
 const requestParams: SecureRedactLoginUserParams = {
   mediaId: 'random',

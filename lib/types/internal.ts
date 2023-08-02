@@ -13,7 +13,7 @@ import {
   SecureRedactUploadMediaParams,
   SecureRedactUploadResponse,
   SecureRedactUserInfo
-} from './lib.ts';
+} from './lib';
 
 enum SecureRedactEndpoints {
   FETCH_TOKEN = 'token',

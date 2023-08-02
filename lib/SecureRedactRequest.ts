@@ -1,5 +1,5 @@
-import SecureRedactError from './SecureRedactError.ts';
-import { SecureRedactParams, SecureRedactResponse } from './types/internal.ts';
+import SecureRedactError from './SecureRedactError.js';
+import { SecureRedactParams, SecureRedactResponse } from './types/internal.js';
 
 class SecureRedactRequest {
   static makePostRequest = async (
@@ -79,6 +79,7 @@ class SecureRedactRequest {
       }
     }
   };
+
   static buildBody = (obj: SecureRedactParams) => {
     try {
       const convertedObject = SecureRedactRequest.convertObjectToSnake(obj);

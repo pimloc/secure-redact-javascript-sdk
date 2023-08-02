@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import * as assert from 'node:assert';
-import { SecureRedactRequest } from '../SecureRedactRequest.ts';
+import { SecureRedactRequest } from '../SecureRedactRequest';
 
 describe('test buildQueryParams functionality', () => {
   test('returns empty string if no params provided', () => {
