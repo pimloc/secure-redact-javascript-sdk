@@ -12,7 +12,9 @@ import {
   SecureRedactRedactResponse,
   SecureRedactUploadMediaParams,
   SecureRedactUploadResponse,
-  SecureRedactUserInfo
+  SecureRedactUserInfo,
+  SecureRedactDownloadMediaParams,
+  SecureRedactDownloadMediaResponse
 } from './lib';
 
 enum SecureRedactEndpoints {
@@ -22,7 +24,8 @@ enum SecureRedactEndpoints {
   UPLOAD_MEDIA = 'video',
   REDACT_MEDIA = 'redact',
   DELETE_MEDIA = 'video/delete',
-  LOGIN_USER = 'login'
+  LOGIN_USER = 'login',
+  DOWNLOAD_MEDIA = 'download'
 }
 
 interface SecureRedactParams
@@ -32,7 +35,8 @@ interface SecureRedactParams
     Partial<SecureRedactFetchTokenParams>,
     Partial<SecureRedactLoginUserParams>,
     Partial<SecureRedactRedactMediaParams>,
-    Partial<SecureRedactUploadMediaParams> {
+    Partial<SecureRedactUploadMediaParams>,
+    Partial<SecureRedactDownloadMediaParams> {
   [key: string]: string | number | boolean | undefined | null;
 }
 
@@ -43,6 +47,7 @@ interface SecureRedactResponse
     Partial<SecureRedactMediaInfo>,
     Partial<SecureRedactRedactResponse>,
     Partial<SecureRedactUploadResponse>,
+    Partial<SecureRedactDownloadMediaResponse>,
     Partial<SecureRedactUserInfo> {
   [key: string]:
     | string

@@ -93,6 +93,17 @@ interface SecureRedactLoginResponse {
   success: boolean;
 }
 
+// download media
+interface SecureRedactDownloadMediaParams {
+  username?: SecureRedactUsername;
+  mediaId: SecureRedactMediaId;
+  outputPath: string;
+}
+
+interface SecureRedactDownloadMediaResponse {
+  error: string | null;
+}
+
 export {
   SecureRedactBearerToken,
   SecureRedactFetchTokenParams,
@@ -108,5 +119,7 @@ export {
   SecureRedactDeleteMediaParams,
   SecureRedactDeleteMediaResponse,
   SecureRedactLoginUserParams,
-  SecureRedactLoginResponse
+  SecureRedactLoginResponse,
+  SecureRedactDownloadMediaParams,
+  SecureRedactDownloadMediaResponse
 };
