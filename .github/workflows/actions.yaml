@@ -1,18 +1,16 @@
-name: Test & Lint
-run-name: 🚀 running linter and tests
+name: Lint, Test & Build
+run-name: 🚀 running linter, tests and building
 on:
   pull_request:
-    branches: [master]
+    branches: [main]
 jobs:
-  lint_and_test_lib:
+  lint_test_build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 20
       - name: Install dependencies
@@ -21,4 +19,5 @@ jobs:
         run: npx eslint . --max-warnings 0
       - name: Run Tests
         run: npm run test
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Run build
+        run: npm run build

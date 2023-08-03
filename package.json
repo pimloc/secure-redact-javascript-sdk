@@ -1,6 +1,6 @@
 {
-  "name": "secure-redact-javascript-sdk",
-  "version": "0.1.0",
+  "name": "@secure-redact/javascript-sdk",
+  "version": "1.0.1",
   "description": "Javascript SDK wrapper for Secure Redact platform. Built and maintained by Pimloc.",
   "main": "./dist/SecureRedactSDK.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "url": "git+https://github.com/pimloc/secure-redact-javascript-sdk.git"
   },
   "type": "module",
-  "author": "Pimloc",
+  "author": "Will Davies",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/pimloc/secure-redact-javascript-sdk/issues"
@@ -22,6 +22,17 @@
   "engines": {
     "node": ">=20.3.0"
   },
+  "files": [
+    "dist",
+    "lib",
+    "package-lock.json",
+    "package.json",
+    "tsconfig.json",
+    ".prettierrc",
+    ".gitignore",
+    ".eslintrc.json",
+    "README.md"
+  ],
   "homepage": "https://github.com/pimloc/secure-redact-javascript-sdk#readme",
   "devDependencies": {
     "@tsconfig/node20": "^20.1.0",
