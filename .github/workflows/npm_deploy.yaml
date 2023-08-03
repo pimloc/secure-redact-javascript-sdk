@@ -1,0 +1,52 @@
+name: Deploy to NPM
+run-name: 🚀 build dist and deploy to npm
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy from'
+        required: true
+        default: 'master'
+      tag_message:
+        description: 'Message to use to tag'
+        required: true
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Run build
+        run: npm run build
+      - name: Deploy to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+  tag_repo:
+    runs-on: ubuntu-latest
+    needs: build_and_deploy
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Get package version
+        id: get_version
+        run: echo "::set-output name=version::$(node -p "require('./package.json').version")"
+      - name: Create tag
+        if: ${{ steps.get_version.outputs.version != '' }}
+        run: git tag -a v${{ steps.get_version.outputs.version }} -m "${{ github.event.inputs.tag_message }}"
+      - name: Push Git tag
+        if: ${{ steps.get_version.outputs.version != '' }}
+        run: git push origin v${{ steps.get_version.outputs.version }}

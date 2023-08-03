@@ -1,6 +1,6 @@
 # Secure Redact Javascript SDK
 
-Build and maintained by the Pimloc team
+Built and maintained by the Pimloc team
 
 This repo provides a Javascript SDK wrapper for talking to the Secure Redact API.
 
