@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import SecureRedactError from './SecureRedactError.js';
 import { SecureRedactParams, SecureRedactResponse } from './types/internal.js';
 
@@ -81,45 +80,12 @@ class SecureRedactRequest {
     }
   };
 
-  static saveFile = async (
-    outputPath: string,
-    buffer: Buffer
-  ): Promise<SecureRedactResponse> => {
-    try {
-      const writeStream = fs.createWriteStream(outputPath);
-      writeStream.write(Buffer.from(buffer));
-      return new Promise((resolve, reject) => {
-        writeStream.on('finish', () => {
-          resolve({});
-        });
-
-        writeStream.on('error', error => {
-          reject(error);
-        });
-      });
-    } catch (err) {
-      if (err instanceof SecureRedactError) {
-        throw err;
-      } else if (err instanceof Error) {
-        throw new SecureRedactError(err, 500);
-      } else {
-        throw err;
-      }
-    }
-  };
-
   static downloadFile = async (
     url: string,
     params: SecureRedactParams,
     auth: string
   ): Promise<SecureRedactResponse> => {
     try {
-      if (!params.outputPath) {
-        throw new SecureRedactError('No output path provided', 400);
-      }
-      // remove the outputPath from params
-      const outputPath = params.outputPath;
-      params.outputPath = undefined;
       const response = await fetch(
         `${url}?${SecureRedactRequest.buildQueryParams(params)}`,
         {
@@ -135,11 +101,8 @@ class SecureRedactRequest {
           response.status
         );
       }
-      const buffer = await response.arrayBuffer();
-      return await SecureRedactRequest.saveFile(
-        outputPath,
-        Buffer.from(buffer)
-      );
+      const blob = await response.blob();
+      return { blob };
     } catch (err) {
       if (err instanceof SecureRedactError) {
         throw err;

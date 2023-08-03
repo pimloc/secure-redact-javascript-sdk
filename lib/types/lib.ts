@@ -97,11 +97,10 @@ interface SecureRedactLoginResponse {
 interface SecureRedactDownloadMediaParams {
   username?: SecureRedactUsername;
   mediaId: SecureRedactMediaId;
-  outputPath: string;
 }
 
 interface SecureRedactDownloadMediaResponse {
-  error: string | null;
+  blob: Blob;
 }
 
 export {

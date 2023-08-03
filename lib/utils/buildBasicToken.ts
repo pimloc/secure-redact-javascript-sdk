@@ -7,9 +7,7 @@ const buildBasicToken = (clientId: string, clientSecret: string): string => {
       500
     );
   }
-  return `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString(
-    'base64'
-  )}`;
+  return `Basic ${btoa(`${clientId}:${clientSecret}`)}`;
 };
 
 export { buildBasicToken };

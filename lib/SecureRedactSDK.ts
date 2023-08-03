@@ -1,5 +1,3 @@
-import fs from 'node:fs/promises';
-import path from 'path';
 import { buildBasicToken } from './utils/buildBasicToken.js';
 import { SecureRedactRequest } from './SecureRedactRequest.js';
 import SecureRedactError from './SecureRedactError.js';
@@ -288,24 +286,20 @@ class SecureRedactSDK {
 
   downloadMedia = async ({
     mediaId,
-    outputPath,
     username
   }: SecureRedactDownloadMediaParams): Promise<SecureRedactDownloadMediaResponse> => {
     // check we can write to this path
-    try {
-      const folderPath = path.dirname(outputPath);
-      await fs.access(folderPath, fs.constants.F_OK | fs.constants.W_OK);
-    } catch (err) {
-      throw new SecureRedactError(`Cannot access output path\n${err}`, 500);
-    }
     const data = await this.#makeAuthenticatedRequest(
       SecureRedactRequest.downloadFile,
       this.#buildUrlPath(SecureRedactEndpoints.DOWNLOAD_MEDIA),
-      { mediaId, outputPath },
+      { mediaId },
       username
     );
+    if (!data.blob) {
+      throw new SecureRedactError('Invalid blob type returned', 500);
+    }
     return {
-      error: data.error?.toString() || null
+      blob: data.blob
     };
   };
 }

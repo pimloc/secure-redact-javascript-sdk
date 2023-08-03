@@ -53,6 +53,7 @@ interface SecureRedactResponse
     | string
     | number
     | boolean
+    | Blob
     | Record<string, string | number>
     | undefined
     | null;
