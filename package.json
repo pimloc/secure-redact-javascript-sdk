@@ -14,7 +14,7 @@
     "url": "git+https://github.com/pimloc/secure-redact-javascript-sdk.git"
   },
   "type": "module",
-  "author": "Pimloc",
+  "author": "Will Davies",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/pimloc/secure-redact-javascript-sdk/issues"
