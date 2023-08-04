@@ -23,6 +23,7 @@
   "engines": {
     "node": ">=20.3.0"
   },
+  "types": "./dist/types/lib.d.ts",
   "files": [
     "dist",
     "lib",
