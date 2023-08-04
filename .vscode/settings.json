@@ -8,5 +8,9 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   // available through eslint plugin in vscode
   "eslint.lintTask.enable": true,
-  "eslint.workingDirectories": ["./"]
+  "eslint.workingDirectories": ["./"],
+  "markdownlint.config": {
+    "MDO13": false,
+    "MDO36": false
+  }
 }

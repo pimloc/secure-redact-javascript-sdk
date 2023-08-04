@@ -9,8 +9,14 @@ This repo provides a Javascript SDK wrapper for talking to the Secure Redact API
 ## Table of Contents
 
 - [Installation](#installation)
-- [Flow 1 - Standard Account](#flow-1---standard-account)
-- [Flow 2 - Enterprise Account](#flow-2---enterprise-account)
+- [Upload Media](#upload-media)
+- [Fetch Media Status](#fetch-media-status)
+- [Redact Media](#redact-media)
+- [Download Media](#download-media)
+- [Delete Media](#delete-media)
+- [Create User](#create-user)
+- [Login User](#login-user)
+- [Generic Types](#generic-types)
 
 ## Installation
 
@@ -63,32 +69,11 @@ const data: SecureRedactUploadMediaResponse = await secureRedact.uploadMedia(
 console.log(data.mediaId);
 ```
 
-## Flow 1 - Standard Account
-
-1. [Upload Media](#upload-media)
-2. [Monitor Upload Progress](#monitor-progress)
-3. [Redact Media](#redact-media)
-4. [Monitor Redact Progress](#monitor-progress)
-5. [Download Media](#download-media)
-
-## Flow 2 - Enterprise Account
-
-1. [Upload Media](#upload-media)
-2. [Monitor Upload Progress](#monitor-progress)
-3. [Create User](#create-user)
-4. [Load Secure Redact UI](#login-user)
-5. User Edits/Review Media
-6. User Redacts Media from UI
-7. [Monitor Redact Progress](#monitor-progress)
-8. [Download Media](#download-media)
-
-## Methods
-
-### Upload Media
+## Upload Media
 
 Function that adds a media to the Secure Redact system. The mediaPath must be a presigned URL that the Secure Redact system can download the file from.
 
-You can monitor progress in two ways. Either by polling our /info route (see [Monitor Progress](#monitor-progress)) or by setting up the stateCallback URL. This must be a URL where the Secure Redact system can POST updates to. For more information see the [API reference](https://docs.secureredact.co.uk/#3a149f82-27ae-4673-a7f4-17cc28d8c146)
+You can monitor progress in two ways. Either by polling our /info route (see [Fetch Media Status](#fetch-media-status)) or by setting up the stateCallback URL. This must be a URL where the Secure Redact system can POST updates to. For more information see the [API reference](https://docs.secureredact.co.uk/#3a149f82-27ae-4673-a7f4-17cc28d8c146)
 
 ```js
 const data = await secureRedact.uploadMedia({
@@ -96,7 +81,7 @@ const data = await secureRedact.uploadMedia({
 });
 ```
 
-#### Parameters
+Parameters:
 
 ```ts
 interface SecureRedactUploadMediaParams {
@@ -109,7 +94,7 @@ interface SecureRedactUploadMediaParams {
 }
 ```
 
-#### Response
+Response:
 
 ```ts
 interface SecureRedactUploadResponse {
@@ -122,4 +107,194 @@ interface SecureRedactUploadResponse {
   message?: string;
   error: string | null;
 }
+```
+
+## Fetch Media Status
+
+Function that responds with the current media status. For information on the potential status' see the [API reference](https://docs.secureredact.co.uk/#ca89fc7a-fafd-44f6-bee8-4f57ddde1579)
+
+```js
+const data = await secureRedact.fetchMediaStatus({
+  mediaId: 'MEDIA_ID'
+});
+```
+
+Parameters:
+
+```ts
+interface SecureRedactFetchMediaStatusParams {
+  mediaId: SecureRedactMediaId;
+  username?: SecureRedactUsername;
+}
+```
+
+Response:
+
+```ts
+interface SecureRedactMediaInfo {
+  mediaId: SecureRedactMediaId;
+  username: SecureRedactUsername;
+  error: string | null;
+  status: string;
+}
+```
+
+## Redact Media
+
+Function that starts the Redact Media process, for more information see [API reference](https://docs.secureredact.co.uk/#fbf2f894-4db3-43cc-ae5b-62d03c3d83fb)
+
+```js
+const data = await secureRedact.redactMedia({
+  mediaId: 'MEDIA_ID'
+});
+```
+
+Parameters:
+
+```ts
+interface SecureRedactRedactMediaParams {
+  mediaId: SecureRedactMediaId;
+  enlargeBoxes?: number;
+  redactAudio?: boolean;
+  blur?: 'pixelated' | 'smooth';
+  username?: SecureRedactUsername;
+}
+```
+
+Response:
+
+```ts
+interface SecureRedactRedactResponse {
+  error: string | null;
+}
+```
+
+## Download Media
+
+Function that responds with the redacted media, for more information see [API reference](https://docs.secureredact.co.uk/#6a691701-2c86-4eda-bb8f-1bfeff0f4d3d)
+
+```js
+const blob = await secureRedact.downloadMedia({
+  mediaId: 'MEDIA_ID'
+});
+
+// simulate downloading file to user's machine
+const blobURL = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.setAttribute('href', blobURL);
+document.body.appendChild(a);
+a.click();
+URL.revokeObjectURL(blobURL);
+```
+
+Parameters:
+
+```ts
+interface SecureRedactDownloadMediaParams {
+  username?: SecureRedactUsername;
+  mediaId: SecureRedactMediaId;
+}
+```
+
+Response:
+
+```ts
+interface SecureRedactDownloadMediaResponse {
+  blob: Blob;
+}
+```
+
+## Delete Media
+
+Function that deletes the media, for more information see [API reference](https://docs.secureredact.co.uk/#1b311316-482c-4c3b-8af4-4f02494939b3)
+
+```js
+const blob = await secureRedact.deleteMedia({
+  mediaId: 'MEDIA_ID'
+});
+```
+
+Parameters:
+
+```ts
+interface SecureRedactDeleteMediaParams {
+  mediaId: SecureRedactMediaId;
+}
+```
+
+Response:
+
+```ts
+interface SecureRedactDeleteMediaResponse {
+  error: string | null;
+  message: string;
+  mediaId: SecureRedactMediaId;
+}
+```
+
+## Create User
+
+**Enterprise Accounts ONLY**
+
+Function that creates a new user that belongs to your enterprise account, for more information see [API reference](https://docs.secureredact.co.uk/#37abd470-679a-4e2a-9c4f-f5fe18405cd5)
+
+```js
+const blob = await secureRedact.createUser({
+  username: 'DUMMY_USERNAME'
+});
+```
+
+Parameters:
+
+```ts
+interface SecureRedactCreateUserParams {
+  username: SecureRedactUsername;
+}
+```
+
+Response:
+
+```ts
+interface SecureRedactUserInfo {
+  username: SecureRedactUsername;
+  error: string | null;
+  msg?: string;
+}
+```
+
+## Login User
+
+**Enterprise Accounts ONLY**
+
+Function that returns a URL to log the user in to the Secure Redact UI, for more information see [API reference](https://docs.secureredact.co.uk/#9b2e4dfc-7c04-4a0b-8a5a-13608e32dbd8)
+
+```js
+const blob = await secureRedact.loginUser({
+  username: 'DUMMY_USERNAME'
+});
+```
+
+Parameters:
+
+```ts
+interface SecureRedactLoginUserParams {
+  username: SecureRedactUsername;
+  mediaId: SecureRedactMediaId;
+}
+```
+
+Response:
+
+```ts
+interface SecureRedactLoginResponse {
+  redirectUrl: string;
+  success: boolean;
+}
+```
+
+## Generic Types
+
+```ts
+type SecureRedactUsername = string;
+type SecureRedactMediaId = string;
 ```
