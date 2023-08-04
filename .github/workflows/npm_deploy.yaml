@@ -29,6 +29,8 @@ jobs:
         run: npm run build
       - name: Run NPM whoami
         run: npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Deploy to NPM
         run: npm publish --access public
         env:
