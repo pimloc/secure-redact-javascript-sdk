@@ -304,22 +304,4 @@ class SecureRedactSDK {
   };
 }
 
-export {
-  SecureRedactSDK,
-  SecureRedactFetchMediaStatusParams,
-  SecureRedactFetchTokenParams,
-  SecureRedactBearerToken,
-  SecureRedactMediaInfo,
-  SecureRedactUserInfo,
-  SecureRedactCreateUserParams,
-  SecureRedactUploadResponse,
-  SecureRedactUploadMediaParams,
-  SecureRedactRedactMediaParams,
-  SecureRedactRedactResponse,
-  SecureRedactDeleteMediaParams,
-  SecureRedactDeleteMediaResponse,
-  SecureRedactLoginUserParams,
-  SecureRedactLoginResponse,
-  SecureRedactDownloadMediaParams,
-  SecureRedactDownloadMediaResponse
-};
+export { SecureRedactSDK };
