@@ -61,7 +61,7 @@ class SecureRedactSDK {
   ): Promise<SecureRedactResponse> => {
     try {
       if (username || !this.#bearerToken) {
-        this.#bearerToken = await this.fetchToken({ username });
+        this.#bearerToken = await this.#fetchToken({ username });
       }
       return await requester(url, params, this.#bearerToken);
     } catch (err) {
@@ -109,7 +109,7 @@ class SecureRedactSDK {
     );
   };
 
-  fetchToken = async ({
+  #fetchToken = async ({
     username
   }: SecureRedactFetchTokenParams = {}): Promise<SecureRedactBearerToken> => {
     const data = await SecureRedactRequest.makeGetRequest(
