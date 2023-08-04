@@ -1,5 +1,7 @@
 import { SecureRedactSDK } from './SecureRedactSDK';
 import {
+  SecureRedactUsername,
+  SecureRedactMediaId,
   SecureRedactFetchMediaStatusParams,
   SecureRedactFetchTokenParams,
   SecureRedactBearerToken,
@@ -20,6 +22,8 @@ import {
 
 export {
   SecureRedactSDK,
+  SecureRedactMediaId,
+  SecureRedactUsername,
   SecureRedactFetchMediaStatusParams,
   SecureRedactFetchTokenParams,
   SecureRedactBearerToken,

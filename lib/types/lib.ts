@@ -104,6 +104,8 @@ interface SecureRedactDownloadMediaResponse {
 }
 
 export {
+  SecureRedactMediaId,
+  SecureRedactUsername,
   SecureRedactBearerToken,
   SecureRedactFetchTokenParams,
   SecureRedactFetchTokenResponse,
