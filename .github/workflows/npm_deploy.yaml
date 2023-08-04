@@ -25,6 +25,8 @@ jobs:
         run: npm ci
       - name: Run build
         run: npm run build
+      - name: Run NPM whoami
+        run: npm whoami
       - name: Deploy to NPM
         run: npm publish --access public
         env:
