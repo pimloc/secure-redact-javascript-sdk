@@ -318,7 +318,7 @@ class SecureRedactSDK {
     file = undefined
   }: SecureRedactUploadMediaParams): Promise<SecureRedactUploadResponse> => {
     let data: SecureRedactResponse;
-    if (mediaPath) {
+    if (!mediaPath) {
       // send file as chunks of data
       data = await this.#sendChunks({
         mediaPath,
