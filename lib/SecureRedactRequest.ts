@@ -10,7 +10,7 @@ class SecureRedactRequest {
     blob?: Blob
   ): Promise<SecureRedactResponse> => {
     try {
-      let outHeaders: Record<string, string> = {
+      const outHeaders: Record<string, string> = {
         Accept: 'application/json',
         Authorization: auth
       };

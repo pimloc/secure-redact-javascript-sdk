@@ -122,7 +122,13 @@ class SecureRedactSDK {
     );
   };
 
-  #loadChunk = (chunkIndex: number, totalChunks: number, fileSize: number, reader: FileReader, file: File) => {
+  #loadChunk = (
+    chunkIndex: number,
+    totalChunks: number,
+    fileSize: number,
+    reader: FileReader,
+    file: File
+  ) => {
     return new Promise((resolve, reject) => {
       const numBytes =
         totalChunks === 1 ? fileSize : this.#CHUNK_SIZE * 1000 * 1000;
@@ -159,7 +165,7 @@ class SecureRedactSDK {
   ) => {
     return await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
-      { 
+      {
         mediapath: params.mediaPath,
         videoTag: params.videoTag,
         increasedDetectionAccuracy: params.increasedDetectionAccuracy,
@@ -177,26 +183,28 @@ class SecureRedactSDK {
       },
       chunk
     );
-  }
+  };
 
-  #sendChunks = async (
-    params: SecureRedactUploadMediaParams
-  ) => {
+  #sendChunks = async (params: SecureRedactUploadMediaParams) => {
     const file = params.file;
     if (!file) {
       throw new SecureRedactError('No file provided', 400);
     }
 
-    let reader = new FileReader(); 
+    const reader = new FileReader();
     let fileId: any = '';
-    const totalChunks = Math.ceil(
-      file.size / (this.#CHUNK_SIZE * 1000 * 1000)
-    );
+    const totalChunks = Math.ceil(file.size / (this.#CHUNK_SIZE * 1000 * 1000));
 
     let data: SecureRedactResponse = {};
 
     for (let i = 0; i < totalChunks; i++) {
-      const chunk: any = await this.#loadChunk(i, totalChunks, file.size, reader, file);
+      const chunk: any = await this.#loadChunk(
+        i,
+        totalChunks,
+        file.size,
+        reader,
+        file
+      );
       const fileData: Blob = chunk.data;
       data = await this.#sendChunk(params, fileData, i, totalChunks, fileId);
       if (!fileId) {
@@ -205,7 +213,7 @@ class SecureRedactSDK {
     }
 
     return data;
-  }
+  };
 
   fetchToken = async ({
     username
@@ -307,8 +315,7 @@ class SecureRedactSDK {
     faces = true,
     file = undefined
   }: SecureRedactUploadMediaParams): Promise<SecureRedactUploadResponse> => {
-
-    let data : SecureRedactResponse;
+    let data: SecureRedactResponse;
     if (mediaPath) {
       // send file as chunks of data
       data = await this.#sendChunks({
@@ -336,8 +343,8 @@ class SecureRedactSDK {
           faces
         }
       );
-      }
-    
+    }
+
     if (typeof data.mediaId !== 'string') {
       throw new SecureRedactError('Invalid media_id type returned', 500);
     }
