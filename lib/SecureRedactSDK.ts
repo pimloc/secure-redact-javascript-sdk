@@ -26,7 +26,7 @@ import {
 } from './types/internal.js';
 
 class SecureRedactSDK {
-  readonly #BASE_URL: string = 'https://app.secureredact.co.uk';
+  #BASE_URL: string = 'https://app.secureredact.co.uk';
   readonly #VERSION: string = 'v2';
   readonly #MAX_RETRIES: number = 1;
   readonly #CHUNK_SIZE: number = 10;
@@ -35,11 +35,14 @@ class SecureRedactSDK {
 
   constructor({
     clientId,
-    clientSecret
+    clientSecret,
+    url = 'https://app.secureredact.co.uk'
   }: {
     clientId: string;
     clientSecret: string;
+    url?: string; // Add the 'url' property to the type definition
   }) {
+    this.#BASE_URL = url;
     this.#basicToken = buildBasicToken(clientId, clientSecret);
     this.#bearerToken = null;
   }
