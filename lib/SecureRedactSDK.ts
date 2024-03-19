@@ -192,12 +192,14 @@ class SecureRedactSDK {
     }
 
     const reader = new FileReader();
+    // @typescript-eslint/no-explicit-any
     let fileId: any = '';
     const totalChunks = Math.ceil(file.size / (this.#CHUNK_SIZE * 1000 * 1000));
 
     let data: SecureRedactResponse = {};
 
     for (let i = 0; i < totalChunks; i++) {
+      // @typescript-eslint/no-explicit-any
       const chunk: any = await this.#loadChunk(
         i,
         totalChunks,
