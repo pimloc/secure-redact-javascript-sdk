@@ -10,18 +10,18 @@ class SecureRedactRequest {
     blob?: Blob
   ): Promise<SecureRedactResponse> => {
     try {
-      let aheaders: Record<string, string> = {
-        'Accept': 'application/json',
-        'Authorization': auth
-      }
+      let outHeaders: Record<string, string> = {
+        Accept: 'application/json',
+        Authorization: auth
+      };
       for (const key in headers) {
         if (headers[key] !== undefined && headers[key] !== null) {
-          aheaders[key] = headers[key];
+          outHeaders[key] = headers[key];
         }
       }
       let body = null;
       if (blob) {
-        aheaders['Content-Type'] = 'multipart/form-data';
+        outHeaders['Content-Type'] = 'multipart/form-data';
         body = new FormData();
         body.append('file', blob);
         const obj = SecureRedactRequest.convertObjectToSnake(data);
@@ -31,10 +31,10 @@ class SecureRedactRequest {
       } else {
         body = SecureRedactRequest.buildBody(data);
       }
-    
+
       return await SecureRedactRequest.makeRequest(url, {
         method: 'POST',
-        headers: aheaders,
+        headers: outHeaders,
         body: body
       });
     } catch (err) {
