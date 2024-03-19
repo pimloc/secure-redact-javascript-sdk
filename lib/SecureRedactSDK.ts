@@ -29,6 +29,7 @@ class SecureRedactSDK {
   readonly #BASE_URL: string = 'https://app.secureredact.co.uk';
   readonly #VERSION: string = 'v2';
   readonly #MAX_RETRIES: number = 1;
+  readonly #CHUNK_SIZE: number = 10;
   #basicToken: string;
   #bearerToken: string | null;
 
@@ -52,18 +53,22 @@ class SecureRedactSDK {
     requester: (
       url: string,
       params: SecureRedactParams,
-      auth: string
+      auth: string,
+      headers?: Record<string, string>,
+      blob?: Blob
     ) => Promise<SecureRedactResponse>,
     url: string,
     params: SecureRedactParams,
     username?: string,
+    headers?: Record<string, string>,
+    blob?: Blob,
     retries = 0
   ): Promise<SecureRedactResponse> => {
     try {
       if (username || !this.#bearerToken) {
         this.#bearerToken = await this.fetchToken({ username });
       }
-      return await requester(url, params, this.#bearerToken);
+      return await requester(url, params, this.#bearerToken, headers, blob);
     } catch (err) {
       if (
         err instanceof SecureRedactError &&
@@ -75,6 +80,8 @@ class SecureRedactSDK {
           url,
           params,
           username,
+          headers,
+          blob,
           retries + 1
         );
       } else {
@@ -86,28 +93,119 @@ class SecureRedactSDK {
   #makeAuthenticatedPostRequest = async (
     url: string,
     data: SecureRedactParams,
-    username?: string
+    username?: string,
+    headers?: Record<string, string>,
+    blob?: Blob
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makePostRequest,
       url,
       data,
-      username
+      username,
+      headers,
+      blob
     );
   };
 
   #makeAuthenticatedGetRequest = async (
     url: string,
     params: SecureRedactParams,
-    username?: string
+    username?: string,
+    headers?: Record<string, string>
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makeGetRequest,
       url,
       params,
-      username
+      username,
+      headers
     );
   };
+
+  #loadChunk = (chunkIndex: number, totalChunks: number, fileSize: number, reader: FileReader, file: File) => {
+    return new Promise((resolve, reject) => {
+      const numBytes =
+        totalChunks === 1 ? fileSize : this.#CHUNK_SIZE * 1000 * 1000;
+      const start = numBytes * chunkIndex;
+
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const result = (<FileReader>e.currentTarget).result;
+        if (result !== null) {
+          resolve({
+            data: new Blob([result], {
+              type: 'application/octet-stream'
+            }),
+            id: chunkIndex
+          });
+        } else {
+          reject(new Error('FileReader result is null.'));
+        }
+      };
+
+      reader.onerror = err => {
+        reject(err);
+      };
+
+      reader.readAsArrayBuffer(file.slice(start, start + numBytes));
+    });
+  };
+
+  #sendChunk = async (
+    params: SecureRedactUploadMediaParams,
+    chunk: Blob,
+    chunkIndex: number,
+    totalChunks: number,
+    fileId: string
+  ) => {
+    return await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
+      { 
+        mediapath: params.mediaPath,
+        videoTag: params.videoTag,
+        increasedDetectionAccuracy: params.increasedDetectionAccuracy,
+        stateCallback: params.stateCallback,
+        exportCallback: params.exportCallback,
+        exportToken: params.exportToken,
+        licensePlates: params.licensePlates,
+        faces: params.faces
+      },
+      '',
+      {
+        'total-chunks': totalChunks.toString(),
+        'chunk-id': chunkIndex.toString(),
+        'file-id': fileId
+      },
+      chunk
+    );
+  }
+
+  #sendChunks = async (
+    params: SecureRedactUploadMediaParams
+  ) => {
+    const file = params.file;
+    if (!file) {
+      throw new SecureRedactError('No file provided', 400);
+    }
+
+    let reader = new FileReader(); 
+    let fileId: any = '';
+    const totalChunks = Math.ceil(
+      file.size / (this.#CHUNK_SIZE * 1000 * 1000)
+    );
+
+    let data: SecureRedactResponse = {};
+
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk: any = await this.#loadChunk(i, totalChunks, file.size, reader, file);
+      const fileData: Blob = chunk.data;
+      data = await this.#sendChunk(params, fileData, i, totalChunks, fileId);
+      if (!fileId) {
+        fileId = data.fileId || '';
+      }
+    }
+
+    return data;
+  }
 
   fetchToken = async ({
     username
@@ -204,20 +302,42 @@ class SecureRedactSDK {
     increasedDetectionAccuracy,
     stateCallback,
     exportCallback,
-    exportToken
+    exportToken,
+    licensePlates = false,
+    faces = true,
+    file = undefined
   }: SecureRedactUploadMediaParams): Promise<SecureRedactUploadResponse> => {
-    const data = await this.#makeAuthenticatedPostRequest(
-      this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
-      {
+
+    let data : SecureRedactResponse;
+    if (mediaPath) {
+      // send file as chunks of data
+      data = await this.#sendChunks({
         mediaPath,
         videoTag,
         increasedDetectionAccuracy,
         stateCallback,
         exportCallback,
-        exportToken
+        exportToken,
+        licensePlates,
+        faces,
+        file
+      });
+    } else {
+      data = await this.#makeAuthenticatedPostRequest(
+        this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
+        {
+          mediaPath,
+          videoTag,
+          increasedDetectionAccuracy,
+          stateCallback,
+          exportCallback,
+          exportToken,
+          licensePlates,
+          faces
+        }
+      );
       }
-    );
-
+    
     if (typeof data.mediaId !== 'string') {
       throw new SecureRedactError('Invalid media_id type returned', 500);
     }

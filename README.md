@@ -72,6 +72,7 @@ console.log(data.mediaId);
 ## Upload Media
 
 Function that adds a media to the Secure Redact system. The mediaPath must be a presigned URL that the Secure Redact system can download the file from.
+To upload a file directly use the File parameter to pass in a File object and pass in an empty string for the mediaPath.
 
 You can monitor progress in two ways. Either by polling our /info route (see [Fetch Media Status](#fetch-media-status)) or by setting up the stateCallback URL. This must be a URL where the Secure Redact system can POST updates to. For more information see the [API reference](https://docs.secureredact.co.uk/#3a149f82-27ae-4673-a7f4-17cc28d8c146)
 

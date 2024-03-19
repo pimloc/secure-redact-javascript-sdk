@@ -5,16 +5,37 @@ class SecureRedactRequest {
   static makePostRequest = async (
     url: string,
     data: SecureRedactParams,
-    auth: string
+    auth: string,
+    headers?: Record<string, string>,
+    blob?: Blob
   ): Promise<SecureRedactResponse> => {
     try {
+      let aheaders: Record<string, string> = {
+        'Accept': 'application/json',
+        'Authorization': auth
+      }
+      for (const key in headers) {
+        if (headers[key] !== undefined && headers[key] !== null) {
+          aheaders[key] = headers[key];
+        }
+      }
+      let body = null;
+      if (blob) {
+        aheaders['Content-Type'] = 'multipart/form-data';
+        body = new FormData();
+        body.append('file', blob);
+        const obj = SecureRedactRequest.convertObjectToSnake(data);
+        for (const key in obj) {
+          body.append(key, obj[key]?.toString() ?? '');
+        }
+      } else {
+        body = SecureRedactRequest.buildBody(data);
+      }
+    
       return await SecureRedactRequest.makeRequest(url, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          Authorization: auth
-        },
-        body: SecureRedactRequest.buildBody(data)
+        headers: aheaders,
+        body: body
       });
     } catch (err) {
       if (err instanceof SecureRedactError) {

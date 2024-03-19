@@ -45,6 +45,9 @@ interface SecureRedactUploadMediaParams {
   stateCallback?: string;
   exportCallback?: string;
   exportToken?: string;
+  licensePlates?: boolean;
+  faces?: boolean;
+  file?: File;
 }
 
 interface SecureRedactUploadResponse {
