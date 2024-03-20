@@ -26,19 +26,23 @@ import {
 } from './types/internal.js';
 
 class SecureRedactSDK {
-  readonly #BASE_URL: string = 'https://app.secureredact.co.uk';
+  #BASE_URL: string = 'https://app.secureredact.co.uk';
   readonly #VERSION: string = 'v2';
   readonly #MAX_RETRIES: number = 1;
+  readonly #CHUNK_SIZE: number = 10;
   #basicToken: string;
   #bearerToken: string | null;
 
   constructor({
     clientId,
-    clientSecret
+    clientSecret,
+    url = 'https://app.secureredact.co.uk'
   }: {
     clientId: string;
     clientSecret: string;
+    url?: string; // Add the 'url' property to the type definition
   }) {
+    this.#BASE_URL = url;
     this.#basicToken = buildBasicToken(clientId, clientSecret);
     this.#bearerToken = null;
   }
@@ -52,18 +56,28 @@ class SecureRedactSDK {
     requester: (
       url: string,
       params: SecureRedactParams,
-      auth: string
+      auth: string,
+      headers?: Record<string, string>,
+      blob?: Blob
     ) => Promise<SecureRedactResponse>,
     url: string,
     params: SecureRedactParams,
     username?: string,
+    headers?: Record<string, string>,
+    videoBlob?: Blob,
     retries = 0
   ): Promise<SecureRedactResponse> => {
     try {
       if (username || !this.#bearerToken) {
         this.#bearerToken = await this.fetchToken({ username });
       }
-      return await requester(url, params, this.#bearerToken);
+      return await requester(
+        url,
+        params,
+        this.#bearerToken,
+        headers,
+        videoBlob
+      );
     } catch (err) {
       if (
         err instanceof SecureRedactError &&
@@ -75,6 +89,8 @@ class SecureRedactSDK {
           url,
           params,
           username,
+          headers,
+          videoBlob,
           retries + 1
         );
       } else {
@@ -86,27 +102,138 @@ class SecureRedactSDK {
   #makeAuthenticatedPostRequest = async (
     url: string,
     data: SecureRedactParams,
-    username?: string
+    username?: string,
+    headers?: Record<string, string>,
+    blob?: Blob
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makePostRequest,
       url,
       data,
-      username
+      username,
+      headers,
+      blob
     );
   };
 
   #makeAuthenticatedGetRequest = async (
     url: string,
     params: SecureRedactParams,
-    username?: string
+    username?: string,
+    headers?: Record<string, string>
   ) => {
     return await this.#makeAuthenticatedRequest(
       SecureRedactRequest.makeGetRequest,
       url,
       params,
-      username
+      username,
+      headers
     );
+  };
+
+  #loadChunk = (
+    chunkIndex: number,
+    totalChunks: number,
+    fileSize: number,
+    reader: FileReader,
+    file: File
+  ) => {
+    return new Promise((resolve, reject) => {
+      const numBytes =
+        totalChunks === 1 ? fileSize : this.#CHUNK_SIZE * 1000 * 1000;
+      const start = numBytes * chunkIndex;
+
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const result = (<FileReader>e.currentTarget).result;
+        if (result !== null) {
+          resolve({
+            data: new Blob([result], {
+              type: 'application/octet-stream'
+            }),
+            id: chunkIndex
+          });
+        } else {
+          reject(new Error('FileReader result is null.'));
+        }
+      };
+
+      reader.onerror = err => {
+        reject(err);
+      };
+
+      reader.readAsArrayBuffer(file.slice(start, start + numBytes));
+    });
+  };
+
+  #sendChunk = async (
+    params: SecureRedactUploadMediaParams,
+    chunk: Blob,
+    chunkIndex: number,
+    totalChunks: number,
+    fileId: string,
+    file: File
+  ) => {
+    return await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
+      {
+        mediapath: params.mediaPath,
+        videoTag: params.videoTag,
+        increasedDetectionAccuracy: params.increasedDetectionAccuracy,
+        stateCallback: params.stateCallback,
+        exportCallback: params.exportCallback,
+        exportToken: params.exportToken,
+        detectLicensePlates: params.detectLicensePlates,
+        detectFaces: params.detectFaces,
+        totalFileSize: file?.size,
+        mimetype: file?.type
+      },
+      '',
+      {
+        'total-chunks': totalChunks.toString(),
+        'chunk-id': chunkIndex.toString(),
+        'file-id': fileId
+      },
+      chunk
+    );
+  };
+
+  #sendChunks = async (params: SecureRedactUploadMediaParams) => {
+    const file = params.file;
+    if (!file) {
+      throw new SecureRedactError('No file provided', 400);
+    }
+
+    const reader = new FileReader();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fileId: any = '';
+    const totalChunks = Math.ceil(file.size / (this.#CHUNK_SIZE * 1000 * 1000));
+
+    let data: SecureRedactResponse = {};
+
+    for (let i = 0; i < totalChunks; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const chunk: any = await this.#loadChunk(
+        i,
+        totalChunks,
+        file.size,
+        reader,
+        file
+      );
+      const fileData: Blob = chunk.data;
+      data = await this.#sendChunk(
+        params,
+        fileData,
+        i,
+        totalChunks,
+        fileId,
+        file
+      );
+      if (!fileId) {
+        fileId = data.fileId || '';
+      }
+    }
+
+    return data;
   };
 
   fetchToken = async ({
@@ -204,24 +331,45 @@ class SecureRedactSDK {
     increasedDetectionAccuracy,
     stateCallback,
     exportCallback,
-    exportToken
+    exportToken,
+    detectLicensePlates = false,
+    detectFaces = true,
+    file = undefined
   }: SecureRedactUploadMediaParams): Promise<SecureRedactUploadResponse> => {
-    const data = await this.#makeAuthenticatedPostRequest(
-      this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
-      {
+    let data: SecureRedactResponse;
+    if (!mediaPath) {
+      // send file as chunks of data
+      data = await this.#sendChunks({
         mediaPath,
         videoTag,
         increasedDetectionAccuracy,
         stateCallback,
         exportCallback,
-        exportToken
-      }
-    );
+        exportToken,
+        detectLicensePlates,
+        detectFaces,
+        file
+      });
+    } else {
+      data = await this.#makeAuthenticatedPostRequest(
+        this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
+        {
+          mediaPath,
+          videoTag,
+          increasedDetectionAccuracy,
+          stateCallback,
+          exportCallback,
+          exportToken,
+          detectLicensePlates,
+          detectFaces
+        }
+      );
+    }
 
     if (typeof data.mediaId !== 'string') {
       throw new SecureRedactError('Invalid media_id type returned', 500);
     }
-    if (typeof data.fileInfo !== 'object') {
+    if (data.fileInfo && typeof data.fileInfo !== 'object') {
       throw new SecureRedactError('Invalid file_info type returned', 500);
     }
 

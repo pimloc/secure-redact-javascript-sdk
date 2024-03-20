@@ -37,7 +37,7 @@ interface SecureRedactParams
     Partial<SecureRedactRedactMediaParams>,
     Partial<SecureRedactUploadMediaParams>,
     Partial<SecureRedactDownloadMediaParams> {
-  [key: string]: string | number | boolean | undefined | null;
+  [key: string]: string | number | boolean | File | undefined | null;
 }
 
 interface SecureRedactResponse

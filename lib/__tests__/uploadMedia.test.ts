@@ -27,7 +27,9 @@ const requestParams: SecureRedactUploadMediaParams = {
   increasedDetectionAccuracy: true,
   stateCallback: 'http://example.com/state',
   exportCallback: 'http://example.com/export',
-  exportToken: 'random_token'
+  exportToken: 'random_token',
+  detectFaces: true,
+  detectLicensePlates: false
 };
 const validResponse = {
   fileInfo: {
@@ -143,7 +145,9 @@ describe('test uploadMedia functionality', () => {
       increased_detection_accuracy: requestParams.increasedDetectionAccuracy,
       state_callback: requestParams.stateCallback,
       export_callback: requestParams.exportCallback,
-      export_token: requestParams.exportToken
+      export_token: requestParams.exportToken,
+      detect_faces: true,
+      detect_license_plates: false
     });
   });
 });

@@ -5,16 +5,37 @@ class SecureRedactRequest {
   static makePostRequest = async (
     url: string,
     data: SecureRedactParams,
-    auth: string
+    auth: string,
+    headers?: Record<string, string>,
+    videoBlob?: Blob
   ): Promise<SecureRedactResponse> => {
     try {
+      const outHeaders: Record<string, string> = {
+        Accept: 'application/json',
+        Authorization: auth
+      };
+      for (const key in headers) {
+        if (headers[key] !== undefined && headers[key] !== null) {
+          outHeaders[key] = headers[key];
+        }
+      }
+      let body = null;
+      if (videoBlob) {
+        body = new FormData();
+        body.append('video', videoBlob);
+        const obj = SecureRedactRequest.convertObjectToSnake(data);
+        for (const key in obj) {
+          body.append(key, obj[key]?.toString() ?? '');
+        }
+      } else {
+        body = SecureRedactRequest.buildBody(data);
+        outHeaders['Content-Type'] = 'application/json';
+      }
+
       return await SecureRedactRequest.makeRequest(url, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          Authorization: auth
-        },
-        body: SecureRedactRequest.buildBody(data)
+        headers: outHeaders,
+        body: body
       });
     } catch (err) {
       if (err instanceof SecureRedactError) {

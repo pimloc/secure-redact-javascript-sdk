@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SecureRedactSDK Demo</title>
+</head>
+<body>
+  <input type="file" id="fileInput" accept="video/*">
+  <button onclick="uploadFile()">Upload</button>
+
+  <script type="module">
+    import { SecureRedactSDK } from '../dist/SecureRedactSDK.js';
+    const clientId = 'your-client-id';
+    const clientSecret = 'your-client-secret';
+    const url = 'https://app.secureredact.co.uk';
+    const sdk = new SecureRedactSDK({clientId, clientSecret, url});
+
+    window.uploadFile = async function() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Please select a file to upload');
+        return;
+      }
+
+      try {
+        const res = await sdk.uploadMedia({
+            mediaPath: '',
+            videoTag: 'test',
+            increasedDetectionAccuracy: false,
+            detectLicensePlates: true,
+            detectFaces: true,
+            file: file
+        });
+        console.log(res);
+
+        // while the video is still processing, you can check the status
+        let status = await sdk.fetchMediaStatus({
+          mediaId: res.mediaId
+        });
+        while (status.status !== 'detected') {
+          console.log(`Video is still processing... ${status.status}`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          status = await sdk.fetchMediaStatus({
+            mediaId: res.mediaId
+          });
+        }
+
+        status = await sdk.redactMedia({
+          mediaId: res.mediaId,
+          enlargeBoxes: '0.05',
+          redactAudio: 'false',
+          blur: 'smooth'
+         });
+
+        // wait for video to be redacted
+        status = await sdk.fetchMediaStatus({
+          mediaId: res.mediaId
+        });
+        while (status.status !== 'exported' && status.status !== 'completed') {
+          console.log(`Video is still processing... ${status.status}`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          status = await sdk.fetchMediaStatus({
+            mediaId: res.mediaId
+          });
+        }
+
+        // download the redacted video
+        let data = await sdk.downloadMedia({
+          mediaId: res.mediaId
+        });
+        console.log('Video downloaded:');
+        let url = URL.createObjectURL(data.blob);
+        let video = document.createElement('video');
+        video.src = url;
+        video.controls = true;
+        document.body.appendChild(video);
+        video.play();
+      } catch (error) {
+        console.error('Error processing file:', error);
+      }
+    }
+  </script>
+</body>
+</html>
