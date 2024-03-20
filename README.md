@@ -92,6 +92,9 @@ interface SecureRedactUploadMediaParams {
   stateCallback?: string;
   exportCallback?: string;
   exportToken?: string;
+  detectLicensePlates?: boolean;
+  detectFaces?: boolean;
+  file?: File;
 }
 ```
 
