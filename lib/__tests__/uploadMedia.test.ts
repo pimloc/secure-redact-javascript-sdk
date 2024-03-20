@@ -146,8 +146,8 @@ describe('test uploadMedia functionality', () => {
       state_callback: requestParams.stateCallback,
       export_callback: requestParams.exportCallback,
       export_token: requestParams.exportToken,
-      faces: true,
-      license_plates: false
+      detect_faces: true,
+      detect_license_plates: false
     });
   });
 });
