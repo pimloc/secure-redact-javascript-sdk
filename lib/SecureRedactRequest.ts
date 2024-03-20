@@ -7,7 +7,7 @@ class SecureRedactRequest {
     data: SecureRedactParams,
     auth: string,
     headers?: Record<string, string>,
-    blob?: Blob
+    videoBlob?: Blob
   ): Promise<SecureRedactResponse> => {
     try {
       const outHeaders: Record<string, string> = {
@@ -20,16 +20,16 @@ class SecureRedactRequest {
         }
       }
       let body = null;
-      if (blob) {
-        outHeaders['Content-Type'] = 'multipart/form-data';
+      if (videoBlob) {
         body = new FormData();
-        body.append('file', blob);
+        body.append('video', videoBlob);
         const obj = SecureRedactRequest.convertObjectToSnake(data);
         for (const key in obj) {
           body.append(key, obj[key]?.toString() ?? '');
         }
       } else {
         body = SecureRedactRequest.buildBody(data);
+        outHeaders['Content-Type'] = 'application/json';
       }
 
       return await SecureRedactRequest.makeRequest(url, {

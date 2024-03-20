@@ -64,14 +64,20 @@ class SecureRedactSDK {
     params: SecureRedactParams,
     username?: string,
     headers?: Record<string, string>,
-    blob?: Blob,
+    videoBlob?: Blob,
     retries = 0
   ): Promise<SecureRedactResponse> => {
     try {
       if (username || !this.#bearerToken) {
         this.#bearerToken = await this.fetchToken({ username });
       }
-      return await requester(url, params, this.#bearerToken, headers, blob);
+      return await requester(
+        url,
+        params,
+        this.#bearerToken,
+        headers,
+        videoBlob
+      );
     } catch (err) {
       if (
         err instanceof SecureRedactError &&
@@ -84,7 +90,7 @@ class SecureRedactSDK {
           params,
           username,
           headers,
-          blob,
+          videoBlob,
           retries + 1
         );
       } else {
@@ -164,7 +170,8 @@ class SecureRedactSDK {
     chunk: Blob,
     chunkIndex: number,
     totalChunks: number,
-    fileId: string
+    fileId: string,
+    file: File
   ) => {
     return await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
@@ -175,8 +182,10 @@ class SecureRedactSDK {
         stateCallback: params.stateCallback,
         exportCallback: params.exportCallback,
         exportToken: params.exportToken,
-        licensePlates: params.licensePlates,
-        faces: params.faces
+        detectLicensePlates: params.detectLicensePlates,
+        detectFaces: params.detectFaces,
+        totalFileSize: file?.size,
+        mimetype: file?.type
       },
       '',
       {
@@ -211,7 +220,14 @@ class SecureRedactSDK {
         file
       );
       const fileData: Blob = chunk.data;
-      data = await this.#sendChunk(params, fileData, i, totalChunks, fileId);
+      data = await this.#sendChunk(
+        params,
+        fileData,
+        i,
+        totalChunks,
+        fileId,
+        file
+      );
       if (!fileId) {
         fileId = data.fileId || '';
       }
@@ -316,8 +332,8 @@ class SecureRedactSDK {
     stateCallback,
     exportCallback,
     exportToken,
-    licensePlates = false,
-    faces = true,
+    detectLicensePlates = false,
+    detectFaces = true,
     file = undefined
   }: SecureRedactUploadMediaParams): Promise<SecureRedactUploadResponse> => {
     let data: SecureRedactResponse;
@@ -330,8 +346,8 @@ class SecureRedactSDK {
         stateCallback,
         exportCallback,
         exportToken,
-        licensePlates,
-        faces,
+        detectLicensePlates,
+        detectFaces,
         file
       });
     } else {
@@ -344,8 +360,8 @@ class SecureRedactSDK {
           stateCallback,
           exportCallback,
           exportToken,
-          licensePlates,
-          faces
+          detectLicensePlates,
+          detectFaces
         }
       );
     }
@@ -353,7 +369,7 @@ class SecureRedactSDK {
     if (typeof data.mediaId !== 'string') {
       throw new SecureRedactError('Invalid media_id type returned', 500);
     }
-    if (typeof data.fileInfo !== 'object') {
+    if (data.fileInfo && typeof data.fileInfo !== 'object') {
       throw new SecureRedactError('Invalid file_info type returned', 500);
     }
 

@@ -28,8 +28,8 @@ const requestParams: SecureRedactUploadMediaParams = {
   stateCallback: 'http://example.com/state',
   exportCallback: 'http://example.com/export',
   exportToken: 'random_token',
-  faces: true,
-  licensePlates: false
+  detectFaces: true,
+  detectLicensePlates: false
 };
 const validResponse = {
   fileInfo: {
