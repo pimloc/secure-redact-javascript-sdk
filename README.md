@@ -95,6 +95,7 @@ interface SecureRedactUploadMediaParams {
   detectLicensePlates?: boolean;
   detectFaces?: boolean;
   file?: File;
+  projectId?: string;
 }
 ```
 
@@ -233,6 +234,45 @@ interface SecureRedactDeleteMediaResponse {
   error: string | null;
   message: string;
   mediaId: SecureRedactMediaId;
+}
+```
+
+## Fetch Projects
+
+Function that fetches all projects belonging to the user, for more information see [API reference](https://docs.secureredact.co.uk/)
+
+```js
+const projects = await secureRedact.fetchProjects({
+  page: 0,
+  pageSize: 100
+})
+```
+
+Response:
+
+```ts
+Array<interface SecureRedactProjectInfo> {
+  projectId: string;
+  name: string
+}
+```
+
+## Create Project
+
+Function that creates a project, for more information see [API reference](https://docs.secureredact.co.uk/)
+
+```js
+await secureRedact.createProject({
+  name: string
+})
+```
+
+Response:
+
+```ts
+interface SecureRedactProjectInfo {
+  projectId: string;
+  name: string
 }
 ```
 

@@ -37,6 +37,13 @@ interface SecureRedactUserInfo {
   msg?: string;
 }
 
+interface SecureRedactFileInfo {
+  path: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
 // upload media
 interface SecureRedactUploadMediaParams {
   mediaPath: string;
@@ -47,7 +54,8 @@ interface SecureRedactUploadMediaParams {
   exportToken?: string;
   detectLicensePlates?: boolean;
   detectFaces?: boolean;
-  file?: File;
+  file?: File | SecureRedactFileInfo;
+  projectId?: string;
 }
 
 interface SecureRedactUploadResponse {
@@ -106,6 +114,20 @@ interface SecureRedactDownloadMediaResponse {
   blob: Blob;
 }
 
+interface SecureRedactFetchProjectsParams {
+  page?: number;
+  pageSize?: number;
+}
+
+interface SecureRedactProjectInfo {
+  projectId: string;
+  name: string;
+}
+
+interface SecureRedactFetchProjectsResponse {
+  projects: SecureRedactProjectInfo[];
+}
+
 export {
   SecureRedactMediaId,
   SecureRedactUsername,
@@ -125,5 +147,9 @@ export {
   SecureRedactLoginUserParams,
   SecureRedactLoginResponse,
   SecureRedactDownloadMediaParams,
-  SecureRedactDownloadMediaResponse
+  SecureRedactDownloadMediaResponse,
+  SecureRedactFetchProjectsParams,
+  SecureRedactFetchProjectsResponse,
+  SecureRedactProjectInfo,
+  SecureRedactFileInfo
 };

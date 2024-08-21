@@ -17,13 +17,30 @@ import {
   SecureRedactLoginUserParams,
   SecureRedactLoginResponse,
   SecureRedactDownloadMediaParams,
-  SecureRedactDownloadMediaResponse
+  SecureRedactDownloadMediaResponse,
+  SecureRedactFetchProjectsParams,
+  SecureRedactFetchProjectsResponse,
+  SecureRedactProjectInfo,
+  SecureRedactFileInfo
 } from './types/lib.js';
 import {
   SecureRedactEndpoints,
   SecureRedactParams,
   SecureRedactResponse
 } from './types/internal.js';
+let fs: unknown;
+if (typeof window === 'undefined') {
+  // We are in a Node.js environment
+  try {
+    fs = await import('fs');
+  } catch (err) {
+    console.error('Failed to import fs module:', err);
+    fs = null;
+  }
+} else {
+  // We are in a browser environment
+  fs = null;
+}
 
 class SecureRedactSDK {
   #BASE_URL: string = 'https://app.secureredact.co.uk';
@@ -79,6 +96,7 @@ class SecureRedactSDK {
         videoBlob
       );
     } catch (err) {
+      this.#setBearerToken(''); // trigger a token refresh
       if (
         err instanceof SecureRedactError &&
         err.statusCode === 403 &&
@@ -135,33 +153,57 @@ class SecureRedactSDK {
     chunkIndex: number,
     totalChunks: number,
     fileSize: number,
-    reader: FileReader,
-    file: File
+    reader: FileReader | undefined,
+    fileDescriptor: number | undefined,
+    file: File | SecureRedactFileInfo
   ) => {
     return new Promise((resolve, reject) => {
       const numBytes =
         totalChunks === 1 ? fileSize : this.#CHUNK_SIZE * 1000 * 1000;
       const start = numBytes * chunkIndex;
 
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        const result = (<FileReader>e.currentTarget).result;
-        if (result !== null) {
-          resolve({
-            data: new Blob([result], {
-              type: 'application/octet-stream'
-            }),
-            id: chunkIndex
-          });
-        } else {
-          reject(new Error('FileReader result is null.'));
-        }
-      };
+      if (reader) {
+        // running in browser
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+          const result = (<FileReader>e.currentTarget).result;
+          if (result !== null) {
+            resolve({
+              data: new Blob([result], {
+                type: 'application/octet-stream'
+              }),
+              id: chunkIndex
+            });
+          } else {
+            reject(new Error('FileReader result is null.'));
+          }
+        };
 
-      reader.onerror = err => {
-        reject(err);
-      };
+        reader.onerror = err => {
+          reject(err);
+        };
 
-      reader.readAsArrayBuffer(file.slice(start, start + numBytes));
+        reader.readAsArrayBuffer((file as File).slice(start, start + numBytes));
+      } else if (fileDescriptor !== undefined) {
+        // use fs module
+        const buffer = new Uint8Array(numBytes);
+        (fs as typeof import('fs')).read(
+          fileDescriptor,
+          buffer,
+          0,
+          numBytes,
+          start,
+          () => {
+            resolve({
+              data: new Blob([buffer], {
+                type: 'application/octet-stream'
+              }),
+              id: chunkIndex
+            });
+          }
+        );
+      } else {
+        throw new SecureRedactError('No file descriptor provided', 400);
+      }
     });
   };
 
@@ -171,7 +213,7 @@ class SecureRedactSDK {
     chunkIndex: number,
     totalChunks: number,
     fileId: string,
-    file: File
+    file: File | SecureRedactFileInfo
   ) => {
     return await this.#makeAuthenticatedPostRequest(
       this.#buildUrlPath(SecureRedactEndpoints.UPLOAD_MEDIA),
@@ -185,7 +227,8 @@ class SecureRedactSDK {
         detectLicensePlates: params.detectLicensePlates,
         detectFaces: params.detectFaces,
         totalFileSize: file?.size,
-        mimetype: file?.type
+        mimetype: file?.type,
+        projectId: params?.projectId
       },
       '',
       {
@@ -198,12 +241,44 @@ class SecureRedactSDK {
   };
 
   #sendChunks = async (params: SecureRedactUploadMediaParams) => {
-    const file = params.file;
+    let file = params.file;
     if (!file) {
       throw new SecureRedactError('No file provided', 400);
     }
 
-    const reader = new FileReader();
+    let reader: FileReader | undefined = undefined;
+    let fileDescriptor: number | undefined = undefined;
+    if ((file as SecureRedactFileInfo).path) {
+      if (fs !== null) {
+        const finfo = file as SecureRedactFileInfo;
+        const stat = await (fs as typeof import('fs')).promises?.stat(
+          finfo.path
+        );
+        const openFile = new Promise<number>((resolve, reject) => {
+          (fs as typeof import('fs')).open(finfo.path, 'r', (err, fd) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(fd);
+          });
+        });
+        fileDescriptor = await openFile;
+        file = {
+          name: finfo.name,
+          type: finfo.type,
+          size: stat.size,
+          path: finfo.path
+        };
+      } else {
+        throw new SecureRedactError(
+          'File must be a File object if using in browser',
+          400
+        );
+      }
+    } else {
+      reader = new FileReader();
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fileId: any = '';
     const totalChunks = Math.ceil(file.size / (this.#CHUNK_SIZE * 1000 * 1000));
@@ -217,6 +292,7 @@ class SecureRedactSDK {
         totalChunks,
         file.size,
         reader,
+        fileDescriptor,
         file
       );
       const fileData: Blob = chunk.data;
@@ -334,7 +410,8 @@ class SecureRedactSDK {
     exportToken,
     detectLicensePlates = false,
     detectFaces = true,
-    file = undefined
+    file = undefined,
+    projectId = undefined
   }: SecureRedactUploadMediaParams): Promise<SecureRedactUploadResponse> => {
     let data: SecureRedactResponse;
     if (!mediaPath) {
@@ -348,7 +425,8 @@ class SecureRedactSDK {
         exportToken,
         detectLicensePlates,
         detectFaces,
-        file
+        file,
+        projectId
       });
     } else {
       data = await this.#makeAuthenticatedPostRequest(
@@ -448,6 +526,45 @@ class SecureRedactSDK {
     }
     return {
       blob: data.blob
+    };
+  };
+
+  fetchProjects = async ({
+    page,
+    pageSize
+  }: SecureRedactFetchProjectsParams): Promise<SecureRedactFetchProjectsResponse> => {
+    const data = await this.#makeAuthenticatedGetRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.PROJECTS),
+      { pageNum: page, pageSize: pageSize }
+    );
+
+    if (!Array.isArray(data.projects)) {
+      throw new SecureRedactError('Invalid projects type returned', 500);
+    }
+
+    return {
+      projects: data.projects.map(p => {
+        return {
+          projectId: p.projectId,
+          name: p.name
+        };
+      })
+    };
+  };
+
+  createProject = async (name: string): Promise<SecureRedactProjectInfo> => {
+    const data = await this.#makeAuthenticatedPostRequest(
+      this.#buildUrlPath(SecureRedactEndpoints.PROJECTS),
+      { name }
+    );
+
+    if (!data.projectId) {
+      throw new SecureRedactError('Invalid projectId type returned', 500);
+    }
+
+    return {
+      projectId: String(data?.projectId) || '',
+      name: String(data?.name) || ''
     };
   };
 }
