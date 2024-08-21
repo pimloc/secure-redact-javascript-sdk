@@ -46,7 +46,7 @@ const main = async () => {
   const resp = await sdk.fetchProjects({ page: 0, pageSize: 1000 });
   let project = resp.projects.find(p => p.name === projectName);
   if (!project) {
-    project = sdk.createProject({ name: projectName });
+    project = await sdk.createProject(projectName);
   }
   console.log('project', project);
   const upload = async videoPath => {
@@ -70,7 +70,7 @@ const main = async () => {
       let status = await sdk.fetchMediaStatus({
         mediaId: res.mediaId
       });
-      while (status.status !== 'detected') {
+      while (status.status !== 'detected' && status.status !== 'error') {
         console.log(`Video is still processing... ${status.status}`);
         await new Promise(resolve => setTimeout(resolve, 1000));
         status = await sdk.fetchMediaStatus({
