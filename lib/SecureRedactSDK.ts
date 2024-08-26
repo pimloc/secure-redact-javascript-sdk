@@ -97,7 +97,11 @@ class SecureRedactSDK {
       );
     } catch (err) {
       this.#setBearerToken(''); // trigger a token refresh
-      if (err instanceof SecureRedactError && retries < this.#MAX_RETRIES) {
+      if (
+        err instanceof SecureRedactError &&
+        (err.statusCode === 403 || err.statusCode === 500) &&
+        retries < this.#MAX_RETRIES
+      ) {
         return await this.#makeAuthenticatedRequest(
           requester,
           url,
