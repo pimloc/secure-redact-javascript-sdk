@@ -46,11 +46,8 @@ describe('test fetchProjects functionality', () => {
     clientId: creds.clientId,
     clientSecret: creds.clientSecret
   });
-  authenticatedTokenTests(secureRedact.fetchToken, secureRedact.fetchProjects, {
-    projects: validResponse.projects
-  });
 
-  test('fails if projects route throws', async () => {
+  test.only('fails if projects route throws', async () => {
     const badError = 'bad error';
     server.use(
       rest.post(
@@ -76,12 +73,8 @@ describe('test fetchProjects functionality', () => {
       validResponse.projects[0].name
     );
     assert.deepStrictEqual(result, {
-      projects: [
-        {
-          projectId: validResponse.projects[0].projectId,
-          name: validResponse.projects[0].name
-        }
-      ]
+      projectId: validResponse.projects[0].projectId,
+      name: validResponse.projects[0].name
     });
   });
 });

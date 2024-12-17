@@ -535,7 +535,7 @@ class SecureRedactSDK {
   }: SecureRedactFetchProjectsParams): Promise<SecureRedactFetchProjectsResponse> => {
     const data = await this.#makeAuthenticatedGetRequest(
       this.#buildUrlPath(SecureRedactEndpoints.PROJECTS),
-      { pageNum: page, pageSize: pageSize }
+      { pageNum: page || 0, pageSize: pageSize || 10 }
     );
 
     if (!Array.isArray(data.projects)) {
@@ -558,13 +558,17 @@ class SecureRedactSDK {
       { name }
     );
 
-    if (!data.projectId) {
+    if (!Array.isArray(data.projects) || data.projects.length !== 1) {
+      throw new SecureRedactError('Invalid projects type returned', 500);
+    }
+
+    if (!data.projects[0].projectId) {
       throw new SecureRedactError('Invalid projectId type returned', 500);
     }
 
     return {
-      projectId: String(data?.projectId) || '',
-      name: String(data?.name) || ''
+      projectId: String(data.projects[0]?.projectId) || '',
+      name: String(data.projects[0]?.name) || ''
     };
   };
 }
