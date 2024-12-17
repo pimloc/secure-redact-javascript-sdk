@@ -10,12 +10,7 @@ import * as assert from 'node:assert';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { SecureRedactSDK } from '../SecureRedactSDK';
-import {
-  authenticatedTokenTests,
-  creds,
-  defaultHandlers,
-  tokenEndpointHitCallback
-} from './utils';
+import { creds, defaultHandlers, tokenEndpointHitCallback } from './utils';
 
 const validResponse = {
   projects: [
