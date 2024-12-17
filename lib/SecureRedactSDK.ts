@@ -96,7 +96,7 @@ class SecureRedactSDK {
         videoBlob
       );
     } catch (err) {
-      this.#setBearerToken(''); // trigger a token refresh
+      this.#bearerToken = null;
       if (
         err instanceof SecureRedactError &&
         (err.statusCode === 403 || err.statusCode === 500) &&

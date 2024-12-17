@@ -52,7 +52,6 @@ describe('test deleteMedia functionality', () => {
     clientId: 'invalid',
     clientSecret: 'invalid'
   });
-
   invalidAuthenticatedTokenTest(invalidSecureRedact.deleteMedia, {
     mediaId: requestParams.mediaId
   });
