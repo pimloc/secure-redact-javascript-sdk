@@ -14,7 +14,11 @@ import {
   SecureRedactUploadResponse,
   SecureRedactUserInfo,
   SecureRedactDownloadMediaParams,
-  SecureRedactDownloadMediaResponse
+  SecureRedactDownloadMediaResponse,
+  SecureRedactFetchProjectsParams,
+  SecureRedactFetchProjectsResponse,
+  SecureRedactProjectInfo,
+  SecureRedactFileInfo
 } from './lib';
 
 enum SecureRedactEndpoints {
@@ -25,7 +29,8 @@ enum SecureRedactEndpoints {
   REDACT_MEDIA = 'redact',
   DELETE_MEDIA = 'video/delete',
   LOGIN_USER = 'login',
-  DOWNLOAD_MEDIA = 'download'
+  DOWNLOAD_MEDIA = 'download',
+  PROJECTS = 'projects'
 }
 
 interface SecureRedactParams
@@ -36,8 +41,16 @@ interface SecureRedactParams
     Partial<SecureRedactLoginUserParams>,
     Partial<SecureRedactRedactMediaParams>,
     Partial<SecureRedactUploadMediaParams>,
-    Partial<SecureRedactDownloadMediaParams> {
-  [key: string]: string | number | boolean | File | undefined | null;
+    Partial<SecureRedactDownloadMediaParams>,
+    Partial<SecureRedactFetchProjectsParams> {
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | File
+    | undefined
+    | null
+    | SecureRedactFileInfo;
 }
 
 interface SecureRedactResponse
@@ -48,7 +61,8 @@ interface SecureRedactResponse
     Partial<SecureRedactRedactResponse>,
     Partial<SecureRedactUploadResponse>,
     Partial<SecureRedactDownloadMediaResponse>,
-    Partial<SecureRedactUserInfo> {
+    Partial<SecureRedactUserInfo>,
+    Partial<SecureRedactFetchProjectsResponse> {
   [key: string]:
     | string
     | number
@@ -56,6 +70,8 @@ interface SecureRedactResponse
     | Blob
     | Record<string, string | number>
     | undefined
+    | Array<SecureRedactProjectInfo>
+    | SecureRedactProjectInfo
     | null;
 }
 
