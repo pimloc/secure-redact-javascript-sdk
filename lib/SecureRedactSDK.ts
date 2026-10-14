@@ -192,9 +192,14 @@ class SecureRedactSDK {
           0,
           numBytes,
           start,
-          () => {
+          (err: Error | null, bytesRead: number) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            // the final chunk is usually shorter than numBytes
             resolve({
-              data: new Blob([buffer], {
+              data: new Blob([buffer.subarray(0, bytesRead)], {
                 type: 'application/octet-stream'
               }),
               id: chunkIndex

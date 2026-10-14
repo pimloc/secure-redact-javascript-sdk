@@ -5,43 +5,40 @@ import fs from 'fs';
 import path from 'path';
 
 /*
-  A demo script to upload videos to SecureRedact using node.js
+  A demo script to upload a single file to SecureRedact using node.js
+
+  Usage:
+    SR_CLIENT_ID=... SR_CLIENT_SECRET=... [SR_URL=http://localhost:3000] \
+      node demo/upload.js <file> [projectName]
 */
-const clientId = 'place your client id here';
-const clientSecret = 'place your client secret here';
-const url = 'https://app.secureredact.co.uk';
-const rootFolder = 'put the folder you want to upload here';
-const projectName = 'put the name of your project here';
-const sdk = new SecureRedactSDK({ clientId, clientSecret, url });
+const clientId = process.env.SR_CLIENT_ID ?? 'place your client id here';
+const clientSecret =
+  process.env.SR_CLIENT_SECRET ?? 'place your client secret here';
+const url = process.env.SR_URL ?? 'https://app.secureredact.co.uk';
 
-const videos = [];
-const crawlFolder = async folderPath => {
-  return new Promise((resolve, reject) => {
-    fs.readdir(folderPath, async (err, files) => {
-      if (err) {
-        console.error('Error reading folder:', err);
-        reject(err);
-        return;
-      }
+const [filePath, projectName = 'SDK demo uploads'] = process.argv.slice(2);
 
-      for (const file of files) {
-        const filePath = path.join(folderPath, file);
-        const stats = fs.statSync(filePath);
-
-        if (stats.isDirectory()) {
-          await crawlFolder(filePath); // Recursively crawl subfolders
-        } else if (file.endsWith('.mp4')) {
-          videos.push(filePath);
-        }
-      }
-
-      resolve();
-    });
-  });
+const MIME_TYPES = {
+  '.mp4': 'video/mp4',
+  '.mov': 'video/quicktime',
+  '.avi': 'video/x-msvideo',
+  '.mkv': 'video/x-matroska',
+  '.webm': 'video/webm',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png'
 };
 
+const sdk = new SecureRedactSDK({ clientId, clientSecret, url });
+
 const main = async () => {
-  await crawlFolder(rootFolder);
+  if (!filePath) {
+    throw new Error('Usage: node demo/upload.js <file> [projectName]');
+  }
+  const stat = await fs.promises.stat(filePath).catch(() => null);
+  if (!stat?.isFile()) {
+    throw new Error(`File not found: ${filePath}`);
+  }
 
   const resp = await sdk.fetchProjects({ page: 0, pageSize: 1000 });
   let project = resp.projects.find(p => p.name === projectName);
@@ -49,44 +46,39 @@ const main = async () => {
     project = await sdk.createProject(projectName);
   }
   console.log('project', project);
-  const upload = async videoPath => {
-    try {
-      const res = await sdk.uploadMedia({
-        mediaPath: '',
-        videoTag: path.basename(videoPath),
-        increasedDetectionAccuracy: false,
-        detectLicensePlates: false,
-        detectFaces: true,
-        projectId: project.projectId,
-        file: {
-          path: videoPath,
-          name: path.basename(videoPath),
-          type: 'video/mp4'
-        }
-      });
-      console.log(res);
 
-      // while the video is still processing, you can check the status
-      let status = await sdk.fetchMediaStatus({
-        mediaId: res.mediaId
-      });
-      while (status.status !== 'detected' && status.status !== 'error') {
-        console.log(`Video is still processing... ${status.status}`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        status = await sdk.fetchMediaStatus({
-          mediaId: res.mediaId
-        });
-      }
-      console.log(`${videoPath} uploaded and processed.`);
-    } catch (err) {
-      console.error('Error uploading video:', err);
+  const name = path.basename(filePath);
+  const sizeMb = (stat.size / 1000 / 1000).toFixed(1);
+  console.log(`Uploading ${filePath} (${sizeMb} MB) ...`);
+
+  const res = await sdk.uploadMedia({
+    mediaPath: '',
+    videoTag: name,
+    increasedDetectionAccuracy: false,
+    detectLicensePlates: false,
+    detectFaces: true,
+    projectId: project.projectId,
+    file: {
+      path: filePath,
+      name,
+      type:
+        MIME_TYPES[path.extname(filePath).toLowerCase()] ??
+        'application/octet-stream'
     }
-  };
+  });
+  console.log(res);
 
-  for (const file of videos) {
-    console.log(`Uploading ${file} ...`);
-    await upload(file);
+  // while the video is still processing, you can check the status
+  let status = await sdk.fetchMediaStatus({ mediaId: res.mediaId });
+  while (status.status !== 'detected' && status.status !== 'error') {
+    console.log(`Video is still processing... ${status.status}`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    status = await sdk.fetchMediaStatus({ mediaId: res.mediaId });
   }
+  console.log(`${filePath} uploaded and processed: ${status.status}`);
 };
 
-main();
+main().catch(err => {
+  console.error('Error uploading video:', err);
+  process.exitCode = 1;
+});
