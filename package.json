@@ -5,9 +5,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test:only": "node --test --loader tsx --watch --test-only ./lib/__tests__/*.test.ts",
-    "test:dev": "node --test --loader tsx --watch ./lib/__tests__/*.test.ts",
-    "test": "node --test --loader tsx ./lib/__tests__/*.test.ts",
+    "test:only": "node --test --import tsx --watch --test-only ./lib/__tests__/*.test.ts",
+    "test:dev": "node --test --import tsx --watch ./lib/__tests__/*.test.ts",
+    "test": "node --test --import tsx ./lib/__tests__/*.test.ts",
     "build": "tsc"
   },
   "repository": {
