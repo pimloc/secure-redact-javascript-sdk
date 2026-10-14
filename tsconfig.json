@@ -11,7 +11,8 @@
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./lib",
-    "strict": true
+    "strict": true,
+    "types": ["node"]
   },
   "include": ["./lib"],
   "exclude": ["./node_modules", "./lib/__tests__/**/*"],
