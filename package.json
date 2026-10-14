@@ -8,7 +8,8 @@
     "test:only": "node --test --import tsx --watch --test-only ./lib/__tests__/*.test.ts",
     "test:dev": "node --test --import tsx --watch ./lib/__tests__/*.test.ts",
     "test": "node --test --import tsx ./lib/__tests__/*.test.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
